@@ -1,0 +1,2 @@
+{"tenant":"sample-tenant","event_id":"evt-001","timestamp":"2026-10-25T12:00:00Z","principal":"service-sample","resource":"storage-sample","action":"read","public_access":1,"unusual_region":1,"large_read":0}
+{"tenant":"sample-tenant","event_id":"evt-002","timestamp":"2026-10-25T12:00:30Z","principal":"service-sample","resource":"storage-sample","action":"read","public_access":1,"unusual_region":1,"large_read":1}

@@ -1,0 +1,21 @@
+{
+  "tenant": "tenant-example",
+  "version": "example-capabilities-v1",
+  "edges": [
+    {
+      "principal": "service-payments",
+      "resource": "storage-invoices",
+      "action": "disable_public_access"
+    },
+    {
+      "principal": "service-payments",
+      "resource": "storage-invoices",
+      "action": "limit_read_volume"
+    },
+    {
+      "principal": "analytics-job",
+      "resource": "storage-reports",
+      "action": "limit_read_volume"
+    }
+  ]
+}

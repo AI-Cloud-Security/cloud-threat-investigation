@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="workspace-token" content="{{csrf_token}}">
+  <title>Cloud Threat Investigation</title>
+  <link rel="stylesheet" href="/static/workspace.css">
+  <script src="/static/workspace.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to investigations</a>
+<header class="topbar">
+  <a class="brand" href="/">Cloud Threat <strong>Investigation</strong></a>
+  <div class="profile"><label for="analyst">Local analyst name</label><input id="analyst" maxlength="100" placeholder="Enter your name" autocomplete="name"><span class="local-label">Local workspace</span></div>
+</header>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sidebar-label">WORKSPACE</div>
+    <button class="nav selected" data-action="inbox">Investigations <span id="case-count">0</span></button>
+    <button class="nav" data-action="import">Import security records</button>
+    <button class="nav" data-action="help">Workflow guide</button>
+    <section class="trust-summary"><span class="status-dot"></span> Evidence identity<br><code id="key-short">Loading…</code><a href="/api/public-key" download>Download public key</a><p>Keep a separately trusted copy for later verification.</p></section>
+    <p class="sidebar-footer">Software signing profile<br>Single-workstation operation</p>
+  </aside>
+  <main id="main">
+    <div id="message" role="status" aria-live="polite" hidden></div>
+    <section class="page-heading"><div><div class="eyebrow">SECURITY OPERATIONS</div><h1>Investigations</h1><p>Review the activity. Record your decision. Preserve the evidence.</p></div><button class="primary" data-action="import">Import records</button></section>
+    <section id="metrics" class="metrics" aria-label="Investigation counts"></section>
+    <div class="investigation-layout">
+      <section class="inbox" aria-label="Incident list">
+        <div class="inbox-heading"><h2>Incident inbox</h2><button class="quiet" data-action="refresh">Refresh</button></div>
+        <label class="sr-only" for="search">Search incidents</label><input id="search" type="search" placeholder="Search identity or resource">
+        <label class="sr-only" for="filter">Filter incidents</label><select id="filter"><option value="all">All incidents</option><option value="active">Active</option><option value="needs_evidence">Needs evidence</option><option value="closed">Closed</option></select>
+        <div id="case-list"></div>
+      </section>
+      <section id="case-detail" class="detail" aria-label="Selected investigation"></section>
+    </div>
+  </main>
+</div>
+<dialog id="import-dialog">
+  <div class="dialog-heading"><div class="eyebrow">STEP 1 / BRING YOUR OWN RECORDS</div><button class="quiet" data-action="dismiss-import" aria-label="Close import">Close</button></div>
+  <h2>Import security records</h2><p>Upload normalized events. Records are grouped into incidents by tenant, principal and resource.</p>
+  <div id="import-feedback" role="alert" hidden></div>
+  <form id="import-form">
+    <label for="import-actor">Analyst name</label><input id="import-actor" maxlength="100" required placeholder="Your name for the investigation record">
+    <label for="event-file">Event file (JSONL, CSV or JSON)</label><input id="event-file" type="file" accept=".jsonl,.csv,.json" required>
+    <label for="policy-file">Permission policy JSON <span class="optional">optional</span></label><input id="policy-file" type="file" accept=".json">
+    <p class="hint">Without a policy, the application permits no response changes. You can attach a policy during investigation.</p>
+    <div class="resource-links"><a href="/api/template.csv" download>Download CSV template</a><a href="/api/example-policy" download="permission-policy.json">Download policy example</a></div>
+    <details class="format-guide"><summary>Required fields and input scope</summary><p>Fields: tenant, event_id, timestamp with timezone, principal, resource, action, public_access, unusual_region, large_read. Indicators must be integers 0 or 1. JSON imports use an object containing an events array. Maximum: 16 MiB / 10000 records.</p><p>This version accepts normalized exports. Provider-specific formats require an adapter or conversion to this schema; direct cloud connectors are not configured.</p></details>
+    <button class="primary" type="submit">Import and create investigations</button>
+  </form>
+  <div class="example-section"><h3>Explore the workflow first</h3><p>Load the included synthetic records and explicit permission policy.</p><button class="secondary" data-action="examples">Load included dataset</button></div>
+</dialog>
+<dialog id="help-dialog"><div class="dialog-heading"><div class="eyebrow">ANALYST WORKFLOW</div><button class="quiet" data-action="dismiss-help">Close</button></div><h2>How to use this workspace</h2><ol class="guide-list"><li><strong>Import records.</strong> Upload your normalized logs and, optionally, a permission policy.</li><li><strong>Select an incident.</strong> Inspect the identity, resource, event timeline and score contributions.</li><li><strong>Record an assessment.</strong> Choose expected activity, more evidence needed, or suspected threat, with your rationale.</li><li><strong>Investigate or respond.</strong> Add evidence, or preview and approve a policy-permitted response. Record any external action and its ticket reference.</li><li><strong>Close and export.</strong> Close as expected, resolved, or escalated. Export the signed investigation archive.</li></ol><p class="hint">Scores use a transparent configured profile, not trained AI. Signing uses a local software key. Analyst identity and external action completion are self-asserted. The application does not change cloud resources.</p></dialog>
+</body>
+</html>

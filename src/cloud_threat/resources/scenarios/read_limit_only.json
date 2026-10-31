@@ -1,0 +1,12 @@
+{
+  "tenant": "sample-tenant",
+  "version": "sample-read_limit_only",
+  "edges": [
+    {
+      "principal": "service-sample",
+      "resource": "storage-sample",
+      "action": "limit_read_volume"
+    }
+  ],
+  "note": "Simplified capability graph. Production must evaluate RBAC, deny rules, segregation of duties and network constraints."
+}

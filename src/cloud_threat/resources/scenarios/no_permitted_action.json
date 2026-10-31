@@ -1,0 +1,6 @@
+{
+  "tenant": "sample-tenant",
+  "version": "sample-no_permitted_action",
+  "edges": [],
+  "note": "Simplified capability graph. Production must evaluate RBAC, deny rules, segregation of duties and network constraints."
+}

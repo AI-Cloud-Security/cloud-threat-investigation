@@ -1,0 +1,44 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Setup environment",
+      "type": "process",
+      "command": "python",
+      "args": [
+        "bootstrap.py",
+        "--setup-only"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Run all tests",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "run.py",
+        "test"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Run end-to-end checks",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "run.py",
+        "check"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

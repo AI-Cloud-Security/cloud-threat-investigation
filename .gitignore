@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.pyc
+runs/
+dist/
+build/
+*.egg-info/
+.env
+*.pem
+*.key
+*.p12
+*.pfx
+
+workspace/

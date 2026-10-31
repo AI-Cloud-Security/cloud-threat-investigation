@@ -1,0 +1,4 @@
+{"tenant":"tenant-example","event_id":"pay-001","timestamp":"2026-10-31T09:10:00Z","principal":"service-payments","resource":"storage-invoices","action":"read","public_access":1,"unusual_region":1,"large_read":0}
+{"tenant":"tenant-example","event_id":"pay-002","timestamp":"2026-10-31T09:12:00Z","principal":"service-payments","resource":"storage-invoices","action":"read","public_access":1,"unusual_region":1,"large_read":1}
+{"tenant":"tenant-example","event_id":"backup-001","timestamp":"2026-10-31T09:00:00Z","principal":"backup-service","resource":"storage-archive","action":"scheduled_backup","public_access":0,"unusual_region":0,"large_read":0}
+{"tenant":"tenant-example","event_id":"analytics-001","timestamp":"2026-10-31T09:15:00Z","principal":"analytics-job","resource":"storage-reports","action":"read","public_access":0,"unusual_region":1,"large_read":1}
