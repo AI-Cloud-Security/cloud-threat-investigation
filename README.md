@@ -8,7 +8,7 @@ Requires Python 3.12 or newer; Python 3.12 is tested locally.
 
 1. Extract the archive and open `cloud-threat-investigation` in VS Code.
 2. Open the terminal in that folder.
-3. Run the launcher:
+3. Run the launcher :
 
 Windows PowerShell:
 
