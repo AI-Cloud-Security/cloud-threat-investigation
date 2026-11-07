@@ -69,6 +69,24 @@ function renderMetrics() {
     [state.cases.filter((item) => item.status === "closed").length, "Closed cases"]
   ];
   el("metrics").innerHTML = values.map(([value, title]) => `<div class="metric"><strong>${value}</strong><span>${title}</span></div>`).join("");
+  renderRiskOverview();
+}
+
+function renderRiskOverview() {
+  const total = state.cases.length;
+  if (!total) {
+    el("risk-overview").innerHTML = `<h2>Risk at a glance</h2><p class="subtle">Import records to see the incident risk distribution.</p>`;
+    return;
+  }
+  const alertCount = state.cases.filter((item) => item.alert).length;
+  const rows = [
+    ["At or above alert threshold", alertCount, "alert"],
+    ["Below alert threshold", total - alertCount, "below"]
+  ];
+  el("risk-overview").innerHTML = `<h2>Risk at a glance</h2><ul class="risk-chart">${rows.map(([title, count, kind]) => {
+    const percent = Math.round(count / total * 100);
+    return `<li class="risk-row"><span>${title}</span><svg class="risk-track" viewBox="0 0 100 12" preserveAspectRatio="none" role="meter" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${count}" aria-label="${title}: ${count} of ${total} incidents"><rect class="risk-track-bg" width="100" height="12" rx="2"></rect><rect class="risk-fill ${kind}" width="${percent}" height="12" rx="2"></rect></svg><strong class="risk-count">${count}</strong></li>`;
+  }).join("")}</ul>`;
 }
 
 function renderList() {

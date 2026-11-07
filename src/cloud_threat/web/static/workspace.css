@@ -56,6 +56,15 @@ main { padding: 32px; min-width: 0; }
 .metric { padding: 16px 20px; background: white; border: 1px solid var(--line); border-radius: 8px; }
 .metric strong { display: block; font-size: 29px; letter-spacing: -.04em; }
 .metric span { color: var(--muted); font-size: 12px; }
+.risk-overview { margin: 0 0 28px; }
+.risk-overview h2 { font-size: 15px; margin-bottom: 8px; }
+.risk-chart { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 10px; max-width: 760px; }
+.risk-row { display: grid; grid-template-columns: minmax(160px, 210px) minmax(80px, 1fr) 32px; align-items: center; gap: 12px; font-size: 12px; }
+.risk-track { display: block; width: 100%; height: 12px; overflow: visible; }
+.risk-track-bg { fill: #e9eff3; }
+.risk-fill { fill: var(--teal); }
+.risk-fill.alert { fill: var(--danger); }
+.risk-count { text-align: right; font-variant-numeric: tabular-nums; }
 .investigation-layout { display: grid; grid-template-columns: 300px minmax(0,1fr); gap: 24px; align-items: start; }
 .inbox, .detail { background: white; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
 .inbox { padding: 18px; }
@@ -134,4 +143,4 @@ dialog > p { color: var(--muted); }
 
 #import-feedback { padding: 12px; margin-bottom: 16px; border: 1px solid #e8bac0; border-radius: 6px; background: #fff0f0; color: #8c283a; }
 .callout, .activity, .data-table { overflow-wrap: anywhere; }
-@media (max-width: 520px) { main { padding: 16px; } .metrics { grid-template-columns: repeat(2,1fr); } .page-heading { flex-direction: column; gap: 14px; } .brand { white-space: normal; font-size: 15px; } .profile input { width: 130px; } .stepper { grid-template-columns: repeat(2,1fr); } .resource-links { flex-wrap: wrap; } .empty-state { padding: 36px 20px; } }
+@media (max-width: 520px) { main { padding: 16px; } .metrics { grid-template-columns: repeat(2,1fr); } .risk-row { grid-template-columns: minmax(115px, 135px) minmax(50px, 1fr) 28px; gap: 7px; } .page-heading { flex-direction: column; gap: 14px; } .brand { white-space: normal; font-size: 15px; } .profile input { width: 130px; } .stepper { grid-template-columns: repeat(2,1fr); } .resource-links { flex-wrap: wrap; } .empty-state { padding: 36px 20px; } }
