@@ -84,21 +84,9 @@ docker compose up --build        # then open http://127.0.0.1:8765
 
 ## How it works
 
-```mermaid
-flowchart LR
-    S["CloudTrail · Azure · Google Cloud · OCSF"] --> AD["Adapters"]
-    AD --> B
-    A["Normalized records<br/>JSONL · CSV · JSON"] --> B["Validate &<br/>group into incidents"]
-    B --> C["Score &<br/>attribute"]
-    C --> D["Provenance graph<br/>(SHA-256 root)"]
-    P["Permission policy"] --> E["Policy-constrained<br/>response options"]
-    C --> E
-    D --> F["Analyst workflow<br/>assess · approve · close"]
-    E --> F
-    F --> G["Signed, hash-chained<br/>activity history"]
-    G --> H["Signed export archive"]
-    H --> V["Offline verifier"]
-```
+![Cloud Threat Investigation architecture](docs/images/architecture.svg)
+
+Provider logs and normalized records are converted and validated, grouped into incidents, scored and bound into a signed evidence graph. Analysts then work each case through a signed, hash-chained workflow and export archives that anyone can verify offline. A full-resolution [PNG version](docs/images/architecture.png) is available for slides and documents, and the [architecture guide](docs/ARCHITECTURE.md) describes each component.
 
 **Scoring profile (configurable, not a trained model):**
 `10 + 35·public_access + 20·unusual_region + 30·large_read`. The alert threshold is **70**. Scores are transparent risk points, not probabilities.
