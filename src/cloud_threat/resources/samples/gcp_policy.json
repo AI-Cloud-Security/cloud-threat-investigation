@@ -1,0 +1,17 @@
+{
+  "tenant": "acme-analytics-sample",
+  "version": "gcp-sample-policy-v1",
+  "edges": [
+    {
+      "principal": "ops-admin@acme.example",
+      "resource": "press-assets",
+      "action": "disable_public_access"
+    },
+    {
+      "principal": "svc-reporting",
+      "resource": "hr-exports",
+      "action": "limit_read_volume"
+    }
+  ],
+  "note": "Synthetic example. Production policies should be derived from Google Cloud IAM and change-management rules."
+}

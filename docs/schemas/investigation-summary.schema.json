@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Investigation summary row (investigation-summary-v1)",
+  "type": "object",
+  "required": [
+    "schema",
+    "case_id",
+    "tenant",
+    "principal",
+    "resource",
+    "risk_points",
+    "alert",
+    "status",
+    "revision",
+    "evidence_root",
+    "short_id",
+    "indicators",
+    "techniques"
+  ],
+  "properties": {
+    "schema": {
+      "const": "investigation-summary-v1"
+    },
+    "case_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "tenant": {
+      "type": "string"
+    },
+    "principal": {
+      "type": "string"
+    },
+    "resource": {
+      "type": "string"
+    },
+    "risk_points": {
+      "type": "integer"
+    },
+    "alert": {
+      "type": "boolean"
+    },
+    "status": {
+      "enum": [
+        "open",
+        "needs_evidence",
+        "reviewed_expected",
+        "reviewed_threat",
+        "response_approved",
+        "response_recorded",
+        "closed"
+      ]
+    },
+    "assessment": {
+      "enum": [
+        null,
+        "expected",
+        "needs_evidence",
+        "threat"
+      ]
+    },
+    "disposition": {
+      "enum": [
+        null,
+        "expected",
+        "resolved",
+        "escalated"
+      ]
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "evidence_root": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "short_id": {
+      "type": "string"
+    },
+    "indicators": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "enum": [
+          0,
+          1
+        ]
+      }
+    },
+    "techniques": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "external_reference": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "history_events": {
+      "type": "integer"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  }
+}

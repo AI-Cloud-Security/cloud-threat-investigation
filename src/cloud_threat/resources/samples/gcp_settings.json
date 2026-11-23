@@ -1,0 +1,12 @@
+{
+  "description": "Example settings for the synthetic Google Cloud sample.",
+  "expected_regions": [
+    "us-central1",
+    "us-east1"
+  ],
+  "large_read_bytes": 104857600,
+  "principal_aliases": {
+    "svc-reporting@acme-analytics-sample.iam.gserviceaccount.com": "svc-reporting",
+    "backup-runner@acme-analytics-sample.iam.gserviceaccount.com": "backup-runner"
+  }
+}

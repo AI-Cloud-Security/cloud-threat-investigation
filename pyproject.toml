@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cloud-threat-investigation"
-version = "0.2.0"
+version = "0.3.0"
 description = "Explainable cloud threat investigation with signed evidence provenance"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -14,9 +14,11 @@ dependencies = ["cryptography==50.0.2"]
 cloud-threat = "cloud_threat.app:main"
 cloud-evidence = "cloud_threat.core.evidence:main"
 cloud-investigation-verify = "cloud_threat.workflow.exports:main"
+cloud-threat-convert = "cloud_threat.adapters.cli:main"
+cloud-threat-explain = "cloud_threat.core.attribution:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
-cloud_threat = ["resources/*.json", "resources/*.jsonl", "resources/scenarios/*.json", "web/templates/*.html", "web/static/*.css", "web/static/*.js"]
+cloud_threat = ["resources/*.json", "resources/*.jsonl", "resources/scenarios/*.json", "resources/samples/*.json", "web/templates/*.html", "web/static/*.css", "web/static/*.js", "web/static/*.svg"]

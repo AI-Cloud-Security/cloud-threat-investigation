@@ -2,7 +2,7 @@
 
 ## Scope and setup
 
-Version 0.2.0 implements the complete local analyst journey: import, review, assessment, evidence revision, response preview/approval, external outcome recording, closure and export. Provider connectors, automatic cloud execution, trained models and enterprise access control remain extension work.
+Version 0.3.0 implements the complete local analyst journey (import, review, assessment, evidence revision, response preview/approval, external outcome recording, closure and export) plus AWS CloudTrail, Azure, Google Cloud and OCSF import adapters, MITRE ATT&CK context, separation-of-duties policies, a SIEM summary export, a container image and a model-agnostic attribution module. Live provider connectors, automatic cloud execution, managed keys, trusted time and enterprise access control remain extension work.
 
 Use Python 3.12 or newer. Run `python bootstrap.py --setup-only`, select `.venv` in VS Code, and use `run.py` for launch and checks. No editable install or frontend build is required. `cloud-threat-investigation.code-workspace` and `.vscode/` provide editor settings, tasks and launch profiles.
 
@@ -10,13 +10,16 @@ Use Python 3.12 or newer. Run `python bootstrap.py --setup-only`, select `.venv`
 
 | Package or module | Responsibility |
 |---|---|
-| `app.py` | Startup, workspace path, loopback port and process lifecycle |
+| `app.py` | Startup, workspace path, bind address, allowed hosts and process lifecycle |
+| `adapters/` | CloudTrail, Azure, Google Cloud and OCSF conversion to normalized records; `convert` CLI |
 | `workflow/imports.py` | File limits, CSV/JSONL/JSON contracts, grouping and default-deny policy |
 | `workflow/store.py` | Transactional case state, transition invariants, revision storage and signed events |
 | `workflow/crypto.py` | Workspace key lifecycle and canonical Ed25519 documents |
 | `workflow/exports.py` | Portable archive, signed report/manifest and offline verifier |
 | `core/validation.py` | Strict parsing, normalized event fields and finite capability schema |
 | `core/scoring.py` | Feature profile, point score and constrained action enumeration |
+| `core/attribution.py` | Model-agnostic contributions for linear, logistic and tree-ensemble models; `explain` CLI |
+| `core/techniques.py` | MITRE ATT&CK context per indicator (display and report only, outside the signed graph) |
 | `core/canonical.py` | Restricted canonical encoding, SHA-256 and short identifiers |
 | `core/provenance.py` | Content-addressed dependency graph |
 | `core/signing.py` | Evidence bundle signatures and graph integrity verification |
@@ -40,7 +43,7 @@ Use Python 3.12 or newer. Run `python bootstrap.py --setup-only`, select `.venv`
 
 JSONL preserves record bytes excluding line separators and an initial BOM. CSV and JSON-container records are canonicalized; JSON uses `{"events":[...]}`. Each record is limited to 1 MiB, each upload to 16 MiB and 10000 records. The original file digest is included in import history. Additional evidence must remain within the selected incident; old IDs cannot be assigned conflicting bytes.
 
-Grouping uses `(tenant, principal, resource)`. Exact initial evidence-root reimports reuse the case, including a closed case. Changed datasets imported through the import dialog create separate cases; use the selected case's Evidence & timeline form to extend an existing investigation. A policy has tenant, version and capability edges; a supplied policy must match every group, so multi-tenant files should be imported without policy or split by tenant.
+Grouping uses `(tenant, principal, resource)`. Exact initial evidence-root reimports reuse the case, including a closed case. Changed datasets imported through the import dialog create separate cases; use the selected investigation's Evidence tab to extend an existing investigation. A policy has tenant, version and capability edges; a supplied policy must match every group, so multi-tenant files should be imported without policy or split by tenant.
 
 The configured score is `10 + 35*public_access + 20*unusual_region + 30*large_read`; threshold 70. Indicators aggregate by maximum across source records. They are not inferred from logs. Exact coefficient contributions explain the arithmetic, not causation or empirical detection quality.
 
@@ -57,7 +60,7 @@ Every mutation requires `actor` and integer `version`; import requires actor but
 | assess | Open case without current approval; expected, needs_evidence or threat plus rationale |
 | add evidence/policy | Open case; new evidence root; append revision and reset current assessment/approval/outcome |
 | preview | Suspected threat without approval; exact permitted action combination; sign root/revision-bound preview |
-| approve | Current suspected threat; stored preview belongs to case and current root/revision |
+| approve | Current suspected threat; stored preview belongs to case and current root/revision; with `separation_of_duties`, approver differs from the latest assessor (case-insensitive) |
 | record external outcome | Current approval, no prior current outcome; completed/failed/not_applied plus reference and note |
 | close expected | Assessment is expected |
 | close resolved | Assessment is threat and approved external outcome is completed |
@@ -68,20 +71,21 @@ A stale client receives HTTP 409. New evidence keeps previous roots and all prio
 
 ## HTTP contract
 
-All routes bind to loopback. GETs do not mutate investigation state. POSTs require `Content-Type: application/json`, `X-Workspace-Token` from the current HTML meta tag, a same-origin Origin when provided, actor and command fields. Request bodies are limited to 24 MiB including base64 overhead. Uploaded `content` is base64, `format` is jsonl/csv/json; `policy` is an optional JSON object. Missing policy grants no capabilities.
+All routes bind to loopback. GETs do not mutate investigation state. POSTs require `Content-Type: application/json`, `X-Workspace-Token` from the current HTML meta tag, a same-origin Origin when provided, actor and command fields. Request bodies are limited to 24 MiB including base64 overhead. Uploaded `content` is base64, `format` is jsonl/csv/json/cloudtrail/azure/gcp/ocsf; `policy` is an optional JSON object; `adapter_settings` is an optional object accepted only for provider formats. Missing policy grants no capabilities.
 
 | Method and path | Purpose and principal payload fields |
 |---|---|
 | GET / | Workspace HTML with process request token |
 | GET /health | Process liveness |
 | GET /api/workspace | Verified case summaries and signing fingerprint |
+| GET /api/summary.jsonl | One `investigation-summary-v1` row per case for SIEM or ticketing ingestion |
 | GET /api/cases/{id} | Verified case, evidence, options, history and revision summaries |
 | GET /api/cases/{id}/export | Signed investigation ZIP |
 | GET /api/public-key | Raw 32-byte public key |
 | GET /api/template.csv | Normalized CSV template |
 | GET /api/example-policy | Policy matching the CSV template |
-| POST /api/import | filename, format, content, optional policy, actor |
-| POST /api/examples | actor; explicitly load included three-case fixtures |
+| POST /api/import | filename, format, content, optional policy, optional adapter_settings, actor |
+| POST /api/examples | actor; optional dataset `normalized` (default, three cases) or `cloudtrail`, `azure`, `gcp` (converted provider samples) |
 | POST /api/cases/{id}/assessment | version, actor, assessment, rationale |
 | POST /api/cases/{id}/note | version, actor, note |
 | POST /api/cases/{id}/evidence | version, actor, optional content/format/policy, reason |
@@ -117,7 +121,15 @@ python -m build
 
 The JavaScript controller harness requires Node.js 20 or newer and uses its standard library only. It drives UI handlers against a real temporary Python HTTP workspace. It checks rendered content and state transitions with a small DOM substitute; browser layout, native form behavior and assistive-technology conformance still require browser testing. Node is optional for users running the application.
 
-CI is configured for Windows/Linux and Python 3.12/3.13, plus the Node controller check. Local checks do not establish that the remote matrix passed. Validate an installed wheel outside the source checkout and confirm HTML/CSS/JS and included resources are packaged. Keep private workspace files out of wheel, sdist, ZIP and git. Public-release licensing and publication remain owner decisions.
+CI is configured for Windows/Linux and Python 3.12/3.13, the Node controller check and a container build. Local checks do not establish that the remote matrix passed. Validate an installed wheel outside the source checkout and confirm HTML/CSS/JS and included resources are packaged. Keep private workspace files out of wheel, sdist, ZIP and git. The project is released under the MIT License.
+
+## Adding a source adapter
+
+An adapter is a function `to_record(event, config) -> dict | None` that returns a normalized record (the nine required fields plus `source_format` and `source_event`) or `None` to skip an event. Register it in `adapters/base.py`, add the format to `SUPPORTED_FORMATS`, document its indicator rules in its module docstring and in `docs/INTEGRATION_GUIDE.md`, and add tests covering every rule and a sample file under `resources/samples/`. Adapters must be deterministic: identical input and settings must produce identical bytes, so re-imports reuse cases.
+
+## Attribution for other model families
+
+`core/attribution.explain(model, features)` returns the canonical contribution format for `linear`/`additive`, `logistic` and `tree_ensemble` models, with a `complete` flag confirming that baseline plus contributions equals the output. The workspace's signed evidence currently uses the built-in additive profile; `builtin_profile()` expresses it in this format. Wiring another model family into signed evidence requires a new `model` node schema and evidence schema identifier.
 
 ## Extension work
 

@@ -1,0 +1,8 @@
+{
+  "description": "Example settings for the synthetic OCSF sample.",
+  "expected_regions": [
+    "us-central1",
+    "us-east1"
+  ],
+  "large_read_bytes": 104857600
+}

@@ -1,0 +1,184 @@
+[
+  {
+    "insertId": "gcp-0001",
+    "logName": "projects/acme-analytics-sample/logs/cloudaudit.googleapis.com%2Factivity",
+    "timestamp": "2026-10-30T22:10:05.118273Z",
+    "receiveTimestamp": "2026-10-30T22:10:05.118273Z",
+    "severity": "INFO",
+    "resource": {
+      "type": "gcs_bucket",
+      "labels": {
+        "project_id": "acme-analytics-sample",
+        "bucket_name": "press-assets",
+        "location": "us-central1"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": {},
+      "serviceName": "storage.googleapis.com",
+      "methodName": "storage.setIamPermissions",
+      "resourceName": "projects/_/buckets/press-assets",
+      "authenticationInfo": {
+        "principalEmail": "ops-admin@acme.example"
+      },
+      "requestMetadata": {
+        "callerIp": "198.51.100.61",
+        "callerSuppliedUserAgent": "google-cloud-sdk"
+      },
+      "resourceLocation": {
+        "currentLocations": [
+          "us-central1"
+        ]
+      },
+      "authorizationInfo": [
+        {
+          "permission": "storage.objects.get",
+          "granted": true
+        }
+      ],
+      "serviceData": {
+        "@type": "type.googleapis.com/google.iam.v1.logging.AuditData",
+        "policyDelta": {
+          "bindingDeltas": [
+            {
+              "action": "ADD",
+              "role": "roles/storage.objectViewer",
+              "member": "allUsers"
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "insertId": "gcp-0002",
+    "logName": "projects/acme-analytics-sample/logs/cloudaudit.googleapis.com%2Fdata_access",
+    "timestamp": "2026-10-31T05:21:00.502931840Z",
+    "receiveTimestamp": "2026-10-31T05:21:00.502931840Z",
+    "severity": "INFO",
+    "resource": {
+      "type": "gcs_bucket",
+      "labels": {
+        "project_id": "acme-analytics-sample",
+        "bucket_name": "hr-exports",
+        "location": "asia-south2"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": {},
+      "serviceName": "storage.googleapis.com",
+      "methodName": "storage.objects.get",
+      "resourceName": "projects/_/buckets/hr-exports",
+      "authenticationInfo": {
+        "principalEmail": "svc-reporting@acme-analytics-sample.iam.gserviceaccount.com"
+      },
+      "requestMetadata": {
+        "callerIp": "198.51.100.62",
+        "callerSuppliedUserAgent": "google-cloud-sdk"
+      },
+      "resourceLocation": {
+        "currentLocations": [
+          "asia-south2"
+        ]
+      },
+      "authorizationInfo": [
+        {
+          "permission": "storage.objects.get",
+          "granted": true
+        }
+      ]
+    },
+    "httpRequest": {
+      "requestMethod": "GET",
+      "responseSize": "943718400",
+      "status": 200
+    }
+  },
+  {
+    "insertId": "gcp-0003",
+    "logName": "projects/acme-analytics-sample/logs/cloudaudit.googleapis.com%2Fdata_access",
+    "timestamp": "2026-10-31T05:20:00.000000Z",
+    "receiveTimestamp": "2026-10-31T05:20:00.000000Z",
+    "severity": "INFO",
+    "resource": {
+      "type": "gcs_bucket",
+      "labels": {
+        "project_id": "acme-analytics-sample",
+        "bucket_name": "hr-exports",
+        "location": "us-central1"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": {},
+      "serviceName": "storage.googleapis.com",
+      "methodName": "storage.objects.get",
+      "resourceName": "projects/_/buckets/hr-exports",
+      "authenticationInfo": {
+        "principalEmail": "svc-reporting@acme-analytics-sample.iam.gserviceaccount.com"
+      },
+      "requestMetadata": {
+        "callerIp": "198.51.100.63",
+        "callerSuppliedUserAgent": "google-cloud-sdk"
+      },
+      "resourceLocation": {
+        "currentLocations": [
+          "us-central1"
+        ]
+      },
+      "authorizationInfo": [
+        {
+          "permission": "storage.objects.get",
+          "granted": true
+        }
+      ]
+    },
+    "httpRequest": {
+      "requestMethod": "GET",
+      "responseSize": "2097152",
+      "status": 200
+    }
+  },
+  {
+    "insertId": "gcp-0004",
+    "logName": "projects/acme-analytics-sample/logs/cloudaudit.googleapis.com%2Fdata_access",
+    "timestamp": "2026-10-31T06:00:00.000000Z",
+    "receiveTimestamp": "2026-10-31T06:00:00.000000Z",
+    "severity": "INFO",
+    "resource": {
+      "type": "gcs_bucket",
+      "labels": {
+        "project_id": "acme-analytics-sample",
+        "bucket_name": "db-backups",
+        "location": "us-central1"
+      }
+    },
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": {},
+      "serviceName": "storage.googleapis.com",
+      "methodName": "storage.objects.get",
+      "resourceName": "projects/_/buckets/db-backups",
+      "authenticationInfo": {
+        "principalEmail": "backup-runner@acme-analytics-sample.iam.gserviceaccount.com"
+      },
+      "requestMetadata": {
+        "callerIp": "198.51.100.64",
+        "callerSuppliedUserAgent": "google-cloud-sdk"
+      },
+      "resourceLocation": {
+        "currentLocations": [
+          "us-central1"
+        ]
+      },
+      "authorizationInfo": [
+        {
+          "permission": "storage.objects.get",
+          "granted": true
+        }
+      ]
+    }
+  }
+]

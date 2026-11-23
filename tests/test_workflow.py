@@ -1,6 +1,7 @@
 """Full investigation lifecycle, persistence and immutable evidence invariants."""
 import io
 import json
+from contextlib import closing
 import sqlite3
 import sys
 import tempfile
@@ -132,14 +133,14 @@ class WorkflowTests(unittest.TestCase):
 
     def test_state_tampering_detected(self):
         detail = self.imported()
-        with sqlite3.connect(self.store.path) as db:
+        with closing(sqlite3.connect(self.store.path)) as db, db:
             changed = dict(detail['case'], risk_points=0)
             db.execute('UPDATE cases SET state=? WHERE id=?', (json.dumps(changed), detail['case']['id']))
         with self.assertRaises(ValueError): self.store.detail(detail['case']['id'])
 
     def test_evidence_table_rejects_overwrite(self):
         detail = self.imported()
-        with sqlite3.connect(self.store.path) as db:
+        with closing(sqlite3.connect(self.store.path)) as db, db:
             with self.assertRaises(sqlite3.IntegrityError):
                 db.execute('UPDATE revisions SET bundle=? WHERE case_id=?', ('{}', detail['case']['id']))
 
@@ -239,3 +240,42 @@ class WorkflowTests(unittest.TestCase):
             for name, value in members.items(): target.writestr(name, value)
         with self.assertRaisesRegex(ValueError, 'evidence revision'):
             verify_archive(changed.getvalue(), self.store.public_key)
+
+    def test_separation_of_duties_requires_distinct_approver(self):
+        self.policy = {**self.policy, 'separation_of_duties': True}
+        detail = self.assess(self.imported())
+        preview = self.store.preview(detail['case']['id'], detail['case']['version'], self.actor, ['disable_public_access'])
+        version = preview['incident']['case']['version']
+        with self.assertRaisesRegex(ConflictError, 'separation of duties'):
+            self.store.approve(detail['case']['id'], version, self.actor.upper(), preview['preview']['id'], 'Same analyst.')
+        approved = self.store.approve(detail['case']['id'], version, 'Second Approver', preview['preview']['id'], 'Independent approval.')
+        self.assertEqual(approved['case']['approval']['actor'], 'Second Approver')
+
+    def test_separation_of_duties_flag_is_validated(self):
+        with self.assertRaisesRegex(ValueError, 'separation_of_duties'):
+            self.store.import_records(self.records, 'jsonl', self.actor, 'events.jsonl', {**self.policy, 'separation_of_duties': 'yes'})
+
+    def test_report_includes_indicators_and_techniques(self):
+        detail = self.imported()
+        with zipfile.ZipFile(io.BytesIO(export_archive(self.store, detail['case']['id']))) as archive:
+            report = archive.read('report.md').decode()
+        self.assertIn('Related MITRE ATT&CK techniques', report)
+        self.assertIn('| T1530 | Data from Cloud Storage | Collection |', report)
+        self.assertIn(f"| Short ID | `{detail['short_id']}` |", report)
+        self.assertIn('# Investigation report: Large read of a publicly exposed resource from an unusual region', report)
+
+    def test_cases_carry_indicator_headline(self):
+        detail = self.imported()
+        self.assertEqual(detail['headline'], 'Large read of a publicly exposed resource from an unusual region')
+        self.assertEqual(detail['case']['title'], detail['headline'])
+        listed = self.store.list_cases()[0]
+        self.assertEqual((listed['headline'], listed['indicators']['large_read']), (detail['headline'], 1))
+        self.assertEqual(self.store.summary()[0]['title'], detail['headline'])
+
+    def test_summary_rows_describe_every_case(self):
+        detail = self.imported()
+        rows = self.store.summary()
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]['case_id'], detail['case']['id'])
+        self.assertEqual(rows[0]['evidence_root'], detail['case']['root'])
+        self.assertIn('T1535', rows[0]['techniques'])

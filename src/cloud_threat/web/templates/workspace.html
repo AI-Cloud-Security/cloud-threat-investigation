@@ -4,56 +4,104 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="workspace-token" content="{{csrf_token}}">
+  <meta name="color-scheme" content="light dark">
   <title>Cloud Threat Investigation</title>
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/static/workspace.css">
   <script src="/static/workspace.js" defer></script>
 </head>
 <body>
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7 3v5.5c0 4.4-3 7.9-7 9.5-4-1.6-7-5.1-7-9.5V6z"/><path d="M9 12l2 2 4-4"/></symbol>
+  <symbol id="i-inbox" viewBox="0 0 24 24"><path d="M4 13l2.5-7h11L20 13v6H4z"/><path d="M4 13h4.5l1.5 2.5h4l1.5-2.5H20"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 16v4h16v-4"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M5 4h9a4 4 0 014 4v12H9a4 4 0 01-4-4z"/><path d="M5 16a4 4 0 014-4h9"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9"/><path d="M16 7l3 3"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v12"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 10-2.3 5.7"/><path d="M20 4v7h-7"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 4l9 16H3z"/><path d="M12 10v4"/><path d="M12 17h.01"/></symbol>
+  <symbol id="i-activity" viewBox="0 0 24 24"><path d="M3 12h4l3-7 4 14 3-7h4"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 6h6l2 2h10v11H3z"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 018 0v3"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/></symbol>
+  <symbol id="i-database" viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v12c0 1.7 3.1 3 7 3s7-1.3 7-3V6"/><path d="M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3"/></symbol>
+</svg>
 <a class="skip" href="#main">Skip to investigations</a>
-<header class="topbar">
-  <a class="brand" href="/">Cloud Threat <strong>Investigation</strong></a>
-  <div class="profile"><label for="analyst">Local analyst name</label><input id="analyst" maxlength="100" placeholder="Enter your name" autocomplete="name"><span class="local-label">Local workspace</span></div>
-</header>
 <div class="shell">
-  <aside class="sidebar">
-    <div class="sidebar-label">WORKSPACE</div>
-    <button class="nav selected" data-action="inbox">Investigations <span id="case-count">0</span></button>
-    <button class="nav" data-action="import">Import security records</button>
-    <button class="nav" data-action="help">Workflow guide</button>
-    <section class="trust-summary"><span class="status-dot"></span> Evidence identity<br><code id="key-short">Loading…</code><a href="/api/public-key" download>Download public key</a><p>Keep a separately trusted copy for later verification.</p></section>
-    <p class="sidebar-footer">Software signing profile<br>Single-workstation operation</p>
+  <aside class="sidebar" aria-label="Workspace navigation">
+    <a class="brand" href="/" aria-label="Cloud Threat Investigation home">
+      <span class="brand-mark"><svg class="icon"><use href="#i-shield"></use></svg></span>
+      <span class="brand-text">Cloud Threat<strong>Investigation</strong></span>
+    </a>
+    <div class="sidebar-label">Workspace</div>
+    <nav>
+      <button class="nav selected" data-action="inbox"><svg class="icon"><use href="#i-inbox"></use></svg><span class="nav-text">Investigations</span><span id="case-count" class="count">0</span></button>
+      <button class="nav" data-action="import"><svg class="icon"><use href="#i-upload"></use></svg><span class="nav-text">Import security records</span></button>
+      <button class="nav" data-action="help"><svg class="icon"><use href="#i-book"></use></svg><span class="nav-text">Workflow guide</span></button>
+    </nav>
+    <section class="trust-summary" aria-label="Evidence signing identity">
+      <div class="trust-title"><svg class="icon"><use href="#i-key"></use></svg>Signing identity <span class="status-dot" aria-hidden="true"></span></div>
+      <code id="key-short">Loading…</code>
+      <a href="/api/public-key" download><svg class="icon"><use href="#i-download"></use></svg>Download public key</a>
+      <p>Store a trusted copy separately to verify exported archives.</p>
+    </section>
+    <p class="sidebar-footer">Ed25519 software signing<br>Single-workstation deployment</p>
   </aside>
-  <main id="main">
-    <div id="message" role="status" aria-live="polite" hidden></div>
-    <section class="page-heading"><div><div class="eyebrow">SECURITY OPERATIONS</div><h1>Investigations</h1><p>Review the activity. Record your decision. Preserve the evidence.</p></div><button class="primary" data-action="import">Import records</button></section>
-    <section id="metrics" class="metrics" aria-label="Investigation counts"></section>
-    <section id="risk-overview" class="risk-overview" aria-label="Risk score distribution"></section>
-    <div class="investigation-layout">
-      <section class="inbox" aria-label="Incident list">
-        <div class="inbox-heading"><h2>Incident inbox</h2><button class="quiet" data-action="refresh">Refresh</button></div>
-        <label class="sr-only" for="search">Search incidents</label><input id="search" type="search" placeholder="Search identity or resource">
-        <label class="sr-only" for="filter">Filter incidents</label><select id="filter"><option value="all">All incidents</option><option value="active">Active</option><option value="needs_evidence">Needs evidence</option><option value="closed">Closed</option></select>
-        <div id="case-list"></div>
+  <div class="content">
+    <header class="topbar">
+      <div class="crumbs"><span>Security operations</span><span aria-hidden="true">/</span><strong>Investigations</strong></div>
+      <div class="profile">
+        <span class="env-pill"><svg class="icon"><use href="#i-database"></use></svg>Local workspace</span>
+        <label for="analyst" class="sr-only">Local analyst name</label>
+        <div class="input-icon"><svg class="icon"><use href="#i-user"></use></svg><input id="analyst" maxlength="100" placeholder="Analyst name" autocomplete="name"></div>
+      </div>
+    </header>
+    <main id="main">
+      <div id="message" role="status" aria-live="polite" hidden></div>
+      <section class="page-heading">
+        <div><h1>Investigations</h1><p>Triage cloud activity, record analyst decisions and export signed, independently verifiable evidence.</p></div>
+        <div class="heading-actions"><button class="secondary" data-action="help"><svg class="icon"><use href="#i-book"></use></svg>Workflow guide</button><button class="primary" data-action="import"><svg class="icon"><use href="#i-upload"></use></svg>Import records</button></div>
       </section>
-      <section id="case-detail" class="detail" aria-label="Selected investigation"></section>
-    </div>
-  </main>
+      <div class="overview-band">
+        <section id="metrics" class="metrics" aria-label="Investigation counts"></section>
+        <section id="risk-overview" class="risk-overview panel" aria-label="Risk score distribution"></section>
+      </div>
+      <div class="investigation-layout">
+        <section class="inbox panel" aria-label="Incident list">
+          <div class="inbox-heading"><h2>Incident inbox</h2><div class="inbox-actions"><a class="icon-button" href="/api/summary.jsonl" download aria-label="Export incident summary for SIEM (JSONL)" title="Export incident summary (JSONL)"><svg class="icon"><use href="#i-download"></use></svg></a><button class="icon-button" data-action="refresh" aria-label="Refresh incidents" title="Refresh"><svg class="icon"><use href="#i-refresh"></use></svg></button></div></div>
+          <div class="inbox-tools">
+            <label class="sr-only" for="search">Search incidents</label>
+            <div class="input-icon"><svg class="icon"><use href="#i-search"></use></svg><input id="search" type="search" placeholder="Search incidents, principals or resources"></div>
+            <label class="sr-only" for="filter">Filter incidents</label><select id="filter"><option value="all">All incidents</option><option value="active">Open</option><option value="needs_evidence">Awaiting evidence</option><option value="closed">Closed</option></select>
+          </div>
+          <div id="case-list"></div>
+        </section>
+        <section id="case-detail" class="detail panel" aria-label="Selected investigation"></section>
+      </div>
+    </main>
+  </div>
 </div>
-<dialog id="import-dialog">
-  <div class="dialog-heading"><div class="eyebrow">STEP 1 / BRING YOUR OWN RECORDS</div><button class="quiet" data-action="dismiss-import" aria-label="Close import">Close</button></div>
-  <h2>Import security records</h2><p>Upload normalized events. Records are grouped into incidents by tenant, principal and resource.</p>
+<dialog id="import-dialog" aria-labelledby="import-title">
+  <div class="dialog-heading"><div class="eyebrow">Data import</div><button class="icon-button" data-action="dismiss-import" aria-label="Close import" title="Close"><svg class="icon"><use href="#i-close"></use></svg></button></div>
+  <h2 id="import-title">Import security records</h2><p>Upload normalized records or an AWS CloudTrail, Azure, Google Cloud or OCSF export. Records are grouped into incidents by tenant, principal and resource.</p>
   <div id="import-feedback" role="alert" hidden></div>
   <form id="import-form">
-    <label for="import-actor">Analyst name</label><input id="import-actor" maxlength="100" required placeholder="Your name for the investigation record">
-    <label for="event-file">Event file (JSONL, CSV or JSON)</label><input id="event-file" type="file" accept=".jsonl,.csv,.json" required>
-    <label for="policy-file">Permission policy JSON <span class="optional">optional</span></label><input id="policy-file" type="file" accept=".json">
-    <p class="hint">Without a policy, the application permits no response changes. You can attach a policy during investigation.</p>
-    <div class="resource-links"><a href="/api/template.csv" download>Download CSV template</a><a href="/api/example-policy" download="permission-policy.json">Download policy example</a></div>
-    <details class="format-guide"><summary>Required fields and input scope</summary><p>Fields: tenant, event_id, timestamp with timezone, principal, resource, action, public_access, unusual_region, large_read. Indicators must be integers 0 or 1. JSON imports use an object containing an events array. Maximum: 16 MiB / 10000 records.</p><p>This version accepts normalized exports. Provider-specific formats require an adapter or conversion to this schema; direct cloud connectors are not configured.</p></details>
-    <button class="primary" type="submit">Import and create investigations</button>
+    <label for="import-actor">Analyst name</label><input id="import-actor" maxlength="100" required placeholder="Recorded in the audit trail">
+    <label for="source-format">Record format</label><select id="source-format"><option value="auto">Normalized records (JSONL, CSV or JSON)</option><option value="cloudtrail">AWS CloudTrail (JSON or JSONL)</option><option value="azure">Azure Activity Log / Storage logs (JSON or JSONL)</option><option value="gcp">Google Cloud Audit Logs (JSON or JSONL)</option><option value="ocsf">OCSF API Activity (JSON or JSONL)</option></select>
+    <label for="event-file">Event file</label><input id="event-file" type="file" accept=".jsonl,.csv,.json" required>
+    <label for="adapter-file">Adapter settings <span class="optional">optional · provider logs only</span></label><input id="adapter-file" type="file" accept=".json">
+    <p class="hint">Defines expected regions, the large-read threshold and principal aliases. Without settings, no region is flagged as unusual.</p>
+    <label for="policy-file">Permission policy <span class="optional">optional · JSON</span></label><input id="policy-file" type="file" accept=".json">
+    <p class="hint">Without a policy, no response actions are permitted. A policy can also be attached later from the Evidence tab.</p>
+    <div class="resource-links"><a href="/api/template.csv" download><svg class="icon"><use href="#i-download"></use></svg>CSV template</a><a href="/api/example-policy" download="permission-policy.json"><svg class="icon"><use href="#i-download"></use></svg>Policy example</a></div>
+    <details class="format-guide"><summary>Input requirements</summary><p><strong>Normalized records</strong> require tenant, event_id, timestamp (with time zone), principal, resource, action, public_access, unusual_region and large_read. Indicators are the integers 0 or 1. JSON files contain an object with an <code>events</code> array. Limits: 16 MiB and 10,000 records per import.</p><p><strong>Provider logs</strong> (AWS CloudTrail, Azure Monitor resource logs, Google Cloud Audit Logs and OCSF API Activity) are converted by built-in adapters. Each original provider event is preserved in the signed evidence. Upload exported files; live cloud connections are not configured.</p></details>
+    <button class="primary block" type="submit"><svg class="icon"><use href="#i-upload"></use></svg>Import records</button>
   </form>
-  <div class="example-section"><h3>Explore the workflow first</h3><p>Load the included synthetic records and explicit permission policy.</p><button class="secondary" data-action="examples">Load included dataset</button></div>
+  <div class="example-section"><div><h3>Explore with sample data</h3><p>Load synthetic incidents with a matching permission policy. Provider samples are converted by the built-in adapters.</p></div><div class="example-actions"><button class="secondary" data-action="examples">Normalized sample</button><button class="secondary" data-action="examples" data-dataset="cloudtrail">AWS CloudTrail</button><button class="secondary" data-action="examples" data-dataset="azure">Microsoft Azure</button><button class="secondary" data-action="examples" data-dataset="gcp">Google Cloud</button></div></div>
 </dialog>
-<dialog id="help-dialog"><div class="dialog-heading"><div class="eyebrow">ANALYST WORKFLOW</div><button class="quiet" data-action="dismiss-help">Close</button></div><h2>How to use this workspace</h2><ol class="guide-list"><li><strong>Import records.</strong> Upload your normalized logs and, optionally, a permission policy.</li><li><strong>Select an incident.</strong> Inspect the identity, resource, event timeline and score contributions.</li><li><strong>Record an assessment.</strong> Choose expected activity, more evidence needed, or suspected threat, with your rationale.</li><li><strong>Investigate or respond.</strong> Add evidence, or preview and approve a policy-permitted response. Record any external action and its ticket reference.</li><li><strong>Close and export.</strong> Close as expected, resolved, or escalated. Export the signed investigation archive.</li></ol><p class="hint">Scores use a transparent configured profile, not trained AI. Signing uses a local software key. Analyst identity and external action completion are self-asserted. The application does not change cloud resources.</p></dialog>
+<dialog id="help-dialog" aria-labelledby="help-title"><div class="dialog-heading"><div class="eyebrow">Workflow guide</div><button class="icon-button" data-action="dismiss-help" aria-label="Close guide" title="Close"><svg class="icon"><use href="#i-close"></use></svg></button></div><h2 id="help-title">Investigation workflow</h2><ol class="guide-list"><li><strong>Import.</strong> Upload normalized records or a provider log export, with an optional permission policy.</li><li><strong>Triage.</strong> Select an incident and review its risk score, score breakdown, ATT&amp;CK context and event timeline.</li><li><strong>Assess.</strong> Record a conclusion (expected activity, more evidence required or suspected threat) with a rationale.</li><li><strong>Respond.</strong> Preview a response permitted by the policy, record approval, apply the change through your change process and record the outcome.</li><li><strong>Close and export.</strong> Close as expected, resolved or escalated, then export the signed investigation archive.</li></ol><p class="hint">Scores come from a transparent, configured profile rather than a trained model. Evidence is signed with a local software key. Analyst names and change outcomes are self-asserted. This application never changes cloud resources.</p></dialog>
 </body>
 </html>

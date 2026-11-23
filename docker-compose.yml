@@ -1,0 +1,13 @@
+services:
+  workspace:
+    build: .
+    image: cloud-threat-investigation:latest
+    ports:
+      # Loopback only: the workspace is single-user and has no login.
+      - "127.0.0.1:8765:8765"
+    volumes:
+      - cti-workspace:/workspace
+    restart: unless-stopped
+
+volumes:
+  cti-workspace:

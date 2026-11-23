@@ -1,6 +1,22 @@
 # Local validation record
 
-Release: 0.2.0. Checked on Linux with Python 3.12.14, cryptography 50.0.2 and Node.js 24.22.1. These are local results, not results from the configured remote CI matrix.
+## 0.3.0
+
+Checked on Windows 11 with Python 3.13 and cryptography 50.0.2. These are local results, not results from the configured remote CI matrix.
+
+| Check | Result |
+|---|---|
+| `python run.py test` | 108 tests passed (CloudTrail, Azure, Google Cloud and OCSF adapters, attribution, separation of duties, techniques, summary export, allowed hosts, plus all 0.2.0 checks) |
+| `python run.py check` | HTTP lifecycle passed |
+| `python scripts/check_repository.py`, `python -m compileall -q src tests scripts` | Passed |
+| Wheel and source distribution | Built; installed wheel outside the checkout ran `cloud-threat-convert` on the packaged CloudTrail sample and loaded packaged techniques and assets |
+| Browser (Microsoft Edge via Playwright) | Normalized, CloudTrail, Azure and Google Cloud datasets, assessment, preview, separation-of-duties rejection and second-analyst approval, outcome, resolved closure, recheck, summary download, light/dark themes and 390 px width without horizontal scrolling; no page errors |
+| `node scripts/ui_checks.mjs` | Not run locally (Node.js not installed); runs in CI |
+| Container image | Not built locally (Docker not installed); built and health-checked in CI |
+
+## 0.2.0
+
+Checked on Linux with Python 3.12.14, cryptography 50.0.2 and Node.js 24.22.1. These are local results, not results from the configured remote CI matrix.
 
 | Check | Result |
 |---|---|

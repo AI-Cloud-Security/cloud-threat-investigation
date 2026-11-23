@@ -11,11 +11,20 @@ from typing import Any
 
 from cloud_threat.core.canonical import canonical, digest
 from cloud_threat.core.signing import verify
+from cloud_threat.core.techniques import annotate, headline
 from cloud_threat.core.validation import parse_record
 from .crypto import fingerprint, sign_document, verify_document
 from .store import InvestigationStore, now
 
 MAX_ARCHIVE_BYTES = 96 * 1024 * 1024
+STATUS_LABELS = {'open': 'Open', 'needs_evidence': 'Awaiting evidence', 'reviewed_expected': 'Assessed: expected activity',
+                 'reviewed_threat': 'Assessed: suspected threat', 'response_approved': 'Response approved',
+                 'response_recorded': 'Response recorded', 'closed': 'Closed'}
+ASSESSMENT_LABELS = {'expected': 'Expected activity', 'needs_evidence': 'More evidence required', 'threat': 'Suspected threat'}
+DISPOSITION_LABELS = {'expected': 'Closed: expected activity', 'resolved': 'Closed: resolved', 'escalated': 'Closed: escalated'}
+FEATURE_LABELS = {'public_access': 'Public access', 'unusual_region': 'Unusual region', 'large_read': 'Large data read'}
+ACTION_LABELS = {'disable_public_access': 'Disable public access', 'limit_read_volume': 'Limit read volume'}
+OUTCOME_LABELS = {'completed': 'Completed', 'failed': 'Failed', 'not_applied': 'Not applied'}
 MAX_EXPANDED_BYTES = 256 * 1024 * 1024
 
 
@@ -33,20 +42,51 @@ def export_archive(store: InvestigationStore, case_id: str) -> bytes:
     report = sign_document(report_payload, store.key)
     def text(value: Any) -> str:
         return re.sub(r'([\\`*_{}\[\]()<>!#|])', r'\\\1', str(value).replace('\r', ' ').replace('\n', ' '))
+    features = next(node['data']['values'] for node in material['bundle']['payload']['graph']['nodes'].values()
+                    if node['kind'] == 'features')
+    techniques = [f"| {item['id']} | {item['name']} | {item['tactic']} | {', '.join(FEATURE_LABELS.get(name, name) for name in item['indicators'])} |"
+                  for item in annotate(features)]
+    graph = material['bundle']['payload']['graph']
+    execution = state.get('execution') or {}
+    approval = state.get('approval') or {}
     markdown = '\n'.join([
-        '# Cloud threat investigation', '', f"Case: {state['id']}",
-        f"Status: {state['status']}", f"Disposition: {state['disposition'] or 'Not closed'}",
-        f"Principal: {text(state['principal'])}", f"Resource: {text(state['resource'])}",
-        f"Risk points: {state['risk_points']}", f"Assessment: {state['assessment'] or 'Not assessed'}",
-        f"Assessment rationale: {text(state['rationale'])}",
-        f"Closure note: {text(state['closing_note'])}", '',
-        '## Evidence', f"Root: {state['root']}", f"Revision: {state['revision']}",
-        f"Signing key fingerprint: {fingerprint(store.public_key)}", '',
-        '## Scope',
-        'This report records an analyst investigation using explicit risk scoring. '
-        'Response execution is recorded from an analyst statement; the application does not execute cloud changes. '
-        'A signature establishes integrity under a trusted key, not source truth, identity proof, or security effectiveness.',
-        '', 'Verify the archive against an independently selected public key before relying on its contents.', '',
+        f"# Investigation report: {headline(features)}", '',
+        f"**Status:** {STATUS_LABELS.get(state['status'], state['status'])} · "
+        f"**Report type:** {'Final' if state['status'] == 'closed' else 'Interim'} · **Issued:** {report_payload['issued_at']}", '',
+        '## Summary', '',
+        '| Field | Value |', '|---|---|',
+        f"| Case ID | {state['id']} |",
+        f"| Tenant | {text(state['tenant'])} |",
+        f"| Principal | {text(state['principal'])} |",
+        f"| Resource | {text(state['resource'])} |",
+        f"| Risk score | {state['risk_points']} points ({'alert raised' if state['alert'] else 'no alert'}) |",
+        f"| Assessment | {ASSESSMENT_LABELS.get(state['assessment'], 'Not yet assessed')} |",
+        f"| Disposition | {DISPOSITION_LABELS.get(state['disposition'], 'Open')} |", '',
+        '## Analyst findings', '',
+        f"**Assessment rationale:** {text(state['rationale']) or 'Not recorded.'}", '',
+        *([f"**Approved response:** {', '.join(ACTION_LABELS.get(a, a) for a in approval['preview']['actions'])}, "
+           f"approved by {text(approval['actor'])}. {text(approval['rationale'])}", ''] if approval else []),
+        *([f"**Change outcome:** {OUTCOME_LABELS.get(execution['outcome'], execution['outcome'])} "
+           f"(reference {text(execution['reference'])}). {text(execution['note'])}", ''] if execution else []),
+        f"**Closure summary:** {text(state['closing_note']) or 'Not closed.'}", '',
+        '## Indicators', '',
+        '| Indicator | Observed |', '|---|---|',
+        *[f"| {FEATURE_LABELS.get(name, name)} | {'Yes' if value else 'No'} |" for name, value in sorted(features.items())], '',
+        '## Related MITRE ATT&CK techniques', '',
+        *(['| Technique | Name | Tactic | Indicators |', '|---|---|---|---|', *techniques] if techniques else ['No indicators were observed.']),
+        '', 'Technique context supports analysis. It does not confirm that a technique occurred.', '',
+        '## Evidence integrity', '',
+        '| Field | Value |', '|---|---|',
+        f"| Evidence root | `{state['root']}` |",
+        f"| Short ID | `{graph['short_id']}` |",
+        f"| Evidence revision | {state['revision']} |",
+        f"| Signing key fingerprint | `{fingerprint(store.public_key)}` |", '',
+        '## Scope and limitations', '',
+        'Scores come from a transparent, configured profile and are not probabilities. '
+        'Response outcomes are recorded from analyst statements; this application does not execute cloud changes. '
+        'Signatures establish integrity under the signing key, not the accuracy of source telemetry, analyst identity or security effectiveness.', '',
+        'Verify this archive against an independently trusted public key before relying on its contents:', '',
+        '```', 'python run.py verify-export <archive>.zip --trusted-key <trusted-public-key>.bin', '```', '',
     ])
     files = {
         'bundle.json': canonical(material['bundle']),

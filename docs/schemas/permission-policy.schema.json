@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Permission policy",
+  "type": "object",
+  "required": [
+    "tenant",
+    "version",
+    "edges"
+  ],
+  "properties": {
+    "tenant": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "separation_of_duties": {
+      "type": "boolean",
+      "description": "Approver must differ from the latest assessor"
+    },
+    "note": {
+      "type": "string"
+    },
+    "edges": {
+      "type": "array",
+      "maxItems": 10000,
+      "items": {
+        "type": "object",
+        "required": [
+          "principal",
+          "resource",
+          "action"
+        ],
+        "properties": {
+          "principal": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          },
+          "resource": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          },
+          "action": {
+            "enum": [
+              "disable_public_access",
+              "limit_read_volume"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

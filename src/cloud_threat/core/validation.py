@@ -28,7 +28,7 @@ def parse_record(raw: bytes, max_bytes: int = MAX_RECORD_BYTES) -> dict[str, Any
 
 def _required_string(value: Any, field: str) -> str:
     if not isinstance(value, str) or not value.strip() or len(value) > 4096:
-        raise ValueError(f'{field} must be a nonempty string of at most 4096 characters')
+        raise ValueError(f'{field} must be a non-empty string of at most 4,096 characters.')
     return value
 
 def normalize(raw: bytes) -> dict[str, Any]:
@@ -39,10 +39,10 @@ def normalize(raw: bytes) -> dict[str, Any]:
         _required_string(event.get(field), field)
     timestamp = datetime.fromisoformat(event['timestamp'].replace('Z', '+00:00'))
     if timestamp.tzinfo is None:
-        raise ValueError('Timestamp requires an explicit timezone')
+        raise ValueError('timestamp must include a time zone, for example 2026-10-31T12:00:00Z.')
     for feature in FEATURES:
         if type(event.get(feature)) is not int or event[feature] not in (0, 1):
-            raise ValueError(f'{feature} must be the integer 0 or 1')
+            raise ValueError(f'{feature} must be the integer 0 or 1.')
     return {field: event[field] for field in (*fields, *FEATURES)}
 
 def validate_policy(policy: dict[str, Any]) -> None:
@@ -51,6 +51,8 @@ def validate_policy(policy: dict[str, Any]) -> None:
         raise ValueError('Policy must be an object')
     for field in ('tenant', 'version'):
         _required_string(policy.get(field), field)
+    if 'separation_of_duties' in policy and not isinstance(policy['separation_of_duties'], bool):
+        raise ValueError('separation_of_duties must be true or false')
     edges = policy.get('edges')
     if not isinstance(edges, list) or len(edges) > 10000:
         raise ValueError('Policy edges must be a list of at most 10000 capabilities')
@@ -60,4 +62,4 @@ def validate_policy(policy: dict[str, Any]) -> None:
         for field in ('principal', 'resource', 'action'):
             _required_string(edge.get(field), field)
         if edge['action'] not in ALLOWED_ACTIONS:
-            raise ValueError('Unsupported policy action')
+            raise ValueError('Unsupported policy action. Permitted actions: disable_public_access, limit_read_volume.')

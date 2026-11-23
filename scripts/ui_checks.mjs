@@ -78,7 +78,7 @@ try {
   }
   const check = (value, explanation) => assert(value, explanation);
   check(state().cases.length === 0, 'First start must be empty.');
-  check(element('case-detail').innerHTML.includes('Start with the activity'), 'Empty state must explain the next step.');
+  check(element('case-detail').innerHTML.includes('Import security records to begin'), 'Empty state must explain the next step.');
   await click('import');
   await click('examples');
   check(element('import-feedback').textContent.includes('analyst name'), 'Missing actor must be explained inside the dialog.');

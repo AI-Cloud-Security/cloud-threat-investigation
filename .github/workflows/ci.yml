@@ -34,3 +34,18 @@ jobs:
       - run: python -m pip install -r requirements.txt
       - run: node --check src/cloud_threat/web/static/workspace.js
       - run: node scripts/ui_checks.mjs
+
+  container:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t cloud-threat-investigation:ci .
+      - name: Start container and check health
+        run: |
+          docker run -d --name cti -p 127.0.0.1:8765:8765 cloud-threat-investigation:ci
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8765/health; then exit 0; fi
+            sleep 1
+          done
+          docker logs cti
+          exit 1

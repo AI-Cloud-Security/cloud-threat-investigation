@@ -1,0 +1,9 @@
+{
+  "description": "Example settings for the synthetic CloudTrail sample.",
+  "expected_regions": [
+    "us-east-1",
+    "us-west-2"
+  ],
+  "large_read_bytes": 104857600,
+  "include_failed": true
+}

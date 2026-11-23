@@ -1,0 +1,149 @@
+[
+  {
+    "class_uid": 6003,
+    "class_name": "API Activity",
+    "category_uid": 6,
+    "activity_id": 2,
+    "severity_id": 1,
+    "status_id": 1,
+    "time": 1793424000000,
+    "metadata": {
+      "uid": "ocsf-0001",
+      "version": "1.1.0",
+      "product": {
+        "name": "Example Lake",
+        "vendor_name": "Example"
+      }
+    },
+    "actor": {
+      "user": {
+        "name": "svc-reporting",
+        "type": "User",
+        "uid": "uid-svc-reporting"
+      }
+    },
+    "api": {
+      "operation": "GetObject",
+      "service": {
+        "name": "storage"
+      }
+    },
+    "resources": [
+      {
+        "name": "hr-exports",
+        "type": "bucket"
+      }
+    ],
+    "cloud": {
+      "provider": "Example",
+      "region": "us-central1",
+      "account": {
+        "uid": "tenant-ocsf"
+      }
+    },
+    "src_endpoint": {
+      "ip": "198.51.100.1"
+    },
+    "traffic": {
+      "bytes_out": 52428800
+    }
+  },
+  {
+    "class_uid": 6003,
+    "class_name": "API Activity",
+    "category_uid": 6,
+    "activity_id": 2,
+    "severity_id": 1,
+    "status_id": 1,
+    "time": 1793424060000,
+    "metadata": {
+      "uid": "ocsf-0002",
+      "version": "1.1.0",
+      "product": {
+        "name": "Example Lake",
+        "vendor_name": "Example"
+      }
+    },
+    "actor": {
+      "user": {
+        "name": "svc-reporting",
+        "type": "User",
+        "uid": "uid-svc-reporting"
+      }
+    },
+    "api": {
+      "operation": "GetObject",
+      "service": {
+        "name": "storage"
+      }
+    },
+    "resources": [
+      {
+        "name": "hr-exports",
+        "type": "bucket"
+      }
+    ],
+    "cloud": {
+      "provider": "Example",
+      "region": "asia-south2",
+      "account": {
+        "uid": "tenant-ocsf"
+      }
+    },
+    "src_endpoint": {
+      "ip": "198.51.100.2"
+    },
+    "traffic": {
+      "bytes_out": 943718400
+    }
+  },
+  {
+    "class_uid": 6003,
+    "class_name": "API Activity",
+    "category_uid": 6,
+    "activity_id": 2,
+    "severity_id": 1,
+    "status_id": 1,
+    "time": 1793424300000,
+    "metadata": {
+      "uid": "ocsf-0003",
+      "version": "1.1.0",
+      "product": {
+        "name": "Example Lake",
+        "vendor_name": "Example"
+      }
+    },
+    "actor": {
+      "user": {
+        "name": "public",
+        "type": "Anonymous",
+        "uid": "uid-public"
+      }
+    },
+    "api": {
+      "operation": "GetObject",
+      "service": {
+        "name": "storage"
+      }
+    },
+    "resources": [
+      {
+        "name": "press-kit",
+        "type": "bucket"
+      }
+    ],
+    "cloud": {
+      "provider": "Example",
+      "region": "us-central1",
+      "account": {
+        "uid": "tenant-ocsf"
+      }
+    },
+    "src_endpoint": {
+      "ip": "198.51.100.3"
+    },
+    "traffic": {
+      "bytes_out": 1048576
+    }
+  }
+]

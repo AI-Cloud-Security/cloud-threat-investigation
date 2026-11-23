@@ -95,3 +95,45 @@ class WebTests(unittest.TestCase):
         self.assertIn(b'event_id', urlopen(self.base + '/api/template.csv').read())
         policy = json.load(urlopen(self.base + '/api/example-policy'))
         self.assertEqual(policy['tenant'], 'tenant-example')
+
+    def test_summary_export_is_jsonl(self):
+        self.post('/api/examples', {})
+        response = urlopen(self.base + '/api/summary.jsonl')
+        self.assertIn('attachment', response.headers['Content-Disposition'])
+        rows = [json.loads(line) for line in response.read().splitlines()]
+        self.assertEqual(len(rows), 3)
+        self.assertEqual({row['schema'] for row in rows}, {'investigation-summary-v1'})
+
+    def test_cloudtrail_example_dataset(self):
+        result = self.post('/api/examples', {'dataset': 'cloudtrail'})
+        self.assertEqual(result['created'], 4)
+        detail = json.load(urlopen(self.base + f"/api/cases/{result['case_ids'][0]}"))
+        self.assertTrue(detail['policy']['separation_of_duties'])
+        with self.assertRaises(HTTPError) as caught: self.post('/api/examples', {'dataset': 'other'})
+        self.assertEqual(caught.exception.code, 422)
+
+    def test_azure_and_gcp_example_datasets(self):
+        self.assertEqual(self.post('/api/examples', {'dataset': 'azure'})['created'], 4)
+        self.assertEqual(self.post('/api/examples', {'dataset': 'gcp'})['created'], 3)
+
+    def test_cloudtrail_upload_with_settings(self):
+        samples = RESOURCE_ROOT / 'samples'
+        result = self.post('/api/import', {'filename': 'trail.json', 'format': 'cloudtrail',
+            'content': base64.b64encode((samples / 'cloudtrail_sample.json').read_bytes()).decode(),
+            'adapter_settings': json.loads((samples / 'cloudtrail_settings.json').read_text())})
+        self.assertEqual(result['created'], 4)
+
+
+class AllowedHostTests(unittest.TestCase):
+    def test_extra_allowed_host_is_accepted_and_others_rejected(self):
+        with tempfile.TemporaryDirectory() as folder:
+            server = make_application(folder, 0, allowed_hosts=('localhost:9000',))
+            thread = threading.Thread(target=server.serve_forever, daemon=True); thread.start()
+            try:
+                base = f'http://127.0.0.1:{server.server_port}'
+                self.assertEqual(urlopen(Request(base + '/health', headers={'Host': 'localhost:9000'})).status, 200)
+                with self.assertRaises(HTTPError) as caught:
+                    urlopen(Request(base + '/health', headers={'Host': 'evil.example:9000'}))
+                self.assertEqual(caught.exception.code, 421)
+            finally:
+                server.shutdown(); server.server_close(); thread.join()

@@ -1,7 +1,7 @@
 include README.md QUICK_START.md SECURITY.md CONTRIBUTING.md CHANGELOG.md pyproject.toml requirements.txt
 include run.py bootstrap.py start.bat start.sh cloud-threat-investigation.code-workspace
 include .env.example .gitignore
-recursive-include src *.py *.json *.jsonl *.html *.css *.js
+recursive-include src *.py *.json *.jsonl *.html *.css *.js *.svg
 recursive-include tests *.py
 recursive-include scripts *.py *.mjs
 recursive-include docs *.md

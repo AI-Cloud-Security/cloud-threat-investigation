@@ -1,0 +1,21 @@
+{
+  "id": "example-logistic-v1",
+  "family": "logistic",
+  "features": [
+    "large_read",
+    "public_access",
+    "unusual_region"
+  ],
+  "intercept": -4.0,
+  "weights": {
+    "public_access": 2.1,
+    "unusual_region": 1.3,
+    "large_read": 1.9
+  },
+  "weight_stderr": {
+    "public_access": 0.3,
+    "unusual_region": 0.25,
+    "large_read": 0.35
+  },
+  "description": "Illustrative logistic detector. Coefficients are examples, not trained values."
+}

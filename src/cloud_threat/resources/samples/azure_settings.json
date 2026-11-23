@@ -1,0 +1,13 @@
+{
+  "description": "Example settings for the synthetic Azure sample. Aliases name an app registration and a managed identity.",
+  "expected_regions": [
+    "eastus",
+    "westus2"
+  ],
+  "large_read_bytes": 104857600,
+  "principal_aliases": {
+    "6a1b2c3d-0000-4000-8000-0000000e7150": "etl-sync-app",
+    "0f9e8d7c-0000-4000-8000-0000000e7150": "etl-sync-app",
+    "5b5b5b5b-0000-4000-8000-0000000bac0b": "backup-agent-identity"
+  }
+}

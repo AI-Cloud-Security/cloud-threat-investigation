@@ -14,6 +14,7 @@ from cloud_threat.core.canonical import canonical, digest
 from cloud_threat.core.provenance import build
 from cloud_threat.core.scoring import ACTIONS, MODEL, score
 from cloud_threat.core.signing import seal, verify
+from cloud_threat.core.techniques import annotate, headline
 from cloud_threat.core.validation import normalize
 from .crypto import fingerprint, load_identity, public_bytes, sign_document, verify_document
 from .imports import group_records, policy_for, read_records
@@ -33,7 +34,7 @@ def now() -> str:
 
 def required_text(value: Any, name: str, limit: int = 4000) -> str:
     if not isinstance(value, str) or not value.strip() or len(value) > limit:
-        raise ValueError(f'{name} is required and must be at most {limit} characters')
+        raise ValueError(f'{name} is required (maximum {limit} characters).')
     return value.strip()
 
 
@@ -108,7 +109,7 @@ class InvestigationStore:
     def _load(self, db, case_id: str) -> tuple[dict, dict, dict, list, list[bytes]]:
         row = db.execute('SELECT * FROM cases WHERE id=?', (case_id,)).fetchone()
         if row is None:
-            raise NotFoundError('Incident not found')
+            raise NotFoundError('Investigation not found.')
         state, policy = json.loads(row['state']), json.loads(row['policy'])
         entries = [json.loads(item['document']) for item in db.execute(
             'SELECT document FROM history WHERE case_id=? ORDER BY sequence', (case_id,))]
@@ -142,9 +143,9 @@ class InvestigationStore:
     @staticmethod
     def _check_version(state: dict, expected: Any) -> None:
         if type(expected) is not int or state['version'] != expected:
-            raise ConflictError('This incident changed. Refresh it and review the latest evidence.')
+            raise ConflictError('This incident was updated elsewhere. The latest version has been loaded; review it and try again.')
         if state['status'] == 'closed':
-            raise ConflictError('Closed investigations are read-only. Import a new case to investigate further activity.')
+            raise ConflictError('This investigation is closed and read-only. Import new records to open a new investigation.')
 
     def _commit(self, db, state: dict, actor: str, kind: str, data: dict) -> None:
         state['version'] += 1
@@ -153,18 +154,20 @@ class InvestigationStore:
         self._audit(db, state['id'], state, actor, kind, data)
 
     def import_records(self, content: bytes, format_name: str, actor: str,
-                       filename: str, policy: dict | None = None) -> dict:
+                       filename: str, policy: dict | None = None,
+                       adapter_settings: dict | None = None) -> dict:
         actor = required_text(actor, 'Analyst name', 100)
         filename = required_text(filename, 'Filename', 250)
-        groups = group_records(read_records(content, format_name))
+        groups = group_records(read_records(content, format_name, adapter_settings))
         prepared = []
         for (tenant, principal, resource), records in groups.items():
             selected_policy = policy_for(tenant, policy)
             graph, decision, _, _ = build(records, selected_policy)
-            prepared.append((tenant, principal, resource, records, selected_policy, graph, decision))
+            features = next(node['data']['values'] for node in graph['nodes'].values() if node['kind'] == 'features')
+            prepared.append((tenant, principal, resource, records, selected_policy, graph, decision, headline(features)))
         ids, reused = [], 0
         with self.transaction() as db:
-            for tenant, principal, resource, records, selected_policy, graph, decision in prepared:
+            for tenant, principal, resource, records, selected_policy, graph, decision, title in prepared:
                 existing = db.execute('SELECT id FROM cases WHERE initial_root=?', (graph['root'],)).fetchone()
                 if existing:
                     self._load(db, existing['id'])
@@ -173,7 +176,7 @@ class InvestigationStore:
                 case_id = str(uuid.uuid4())
                 timestamp = now()
                 state = {'id': case_id, 'tenant': tenant, 'principal': principal, 'resource': resource,
-                         'title': f'{principal} accessing {resource}', 'status': 'open', 'assessment': None,
+                         'title': title, 'status': 'open', 'assessment': None,
                          'rationale': '', 'approval': None, 'execution': None, 'closing_note': '',
                          'disposition': None, 'version': 1, 'revision': 1, 'root': graph['root'],
                          'risk_points': decision['risk_points'], 'alert': decision['alert'],
@@ -187,6 +190,7 @@ class InvestigationStore:
                 db.execute('INSERT INTO revisions VALUES(?,?,?)', (case_id, 1, canonical(bundle).decode()))
                 self._audit(db, case_id, state, actor, 'imported', {
                     'filename': filename, 'source_file_sha256': hashlib.sha256(content).hexdigest(),
+                    'source_format': format_name, 'adapter_settings': adapter_settings,
                     'records': len(records), 'policy_supplied': policy is not None})
                 ids.append(case_id)
         return {'case_ids': ids, 'created': len(ids) - reused, 'reused': reused}
@@ -194,7 +198,11 @@ class InvestigationStore:
     def list_cases(self) -> list[dict]:
         with self.transaction() as db:
             rows = db.execute('SELECT id FROM cases ORDER BY rowid DESC').fetchall()
-            cases = [self._load(db, row['id'])[0] for row in rows]
+            cases = []
+            for row in rows:
+                state, _, bundle, _, _ = self._load(db, row['id'])
+                features = self._features(bundle)
+                cases.append({**state, 'headline': headline(features), 'indicators': features})
             return sorted(cases, key=lambda case: (case['status'] == 'closed', -case['risk_points'], case['id']))
 
     def detail(self, case_id: str) -> dict:
@@ -212,7 +220,31 @@ class InvestigationStore:
                     'original_records': [item.decode('utf8') for item in raw],
                     'provenance': [{'hash': key, **value} for key, value in nodes.items()],
                     'history': history, 'revisions': revisions, 'response_options': options,
+                    'techniques': annotate(features), 'headline': headline(features), 'short_id': bundle['payload']['graph']['short_id'],
                     'verification': verify(bundle, self.public_key), 'key_fingerprint': fingerprint(self.public_key)}
+
+    @staticmethod
+    def _features(bundle: dict) -> dict[str, int]:
+        return next(node['data']['values'] for node in bundle['payload']['graph']['nodes'].values() if node['kind'] == 'features')
+
+    def summary(self) -> list[dict]:
+        """One flat row per case for SIEM, ticketing or spreadsheet ingestion."""
+        rows = []
+        with self.transaction() as db:
+            for row in db.execute('SELECT id FROM cases ORDER BY rowid').fetchall():
+                state, _, bundle, history, _ = self._load(db, row['id'])
+                graph = bundle['payload']['graph']
+                features = self._features(bundle)
+                rows.append({'schema': 'investigation-summary-v1', 'case_id': state['id'], 'title': headline(features),
+                             'tenant': state['tenant'],
+                             'principal': state['principal'], 'resource': state['resource'],
+                             'risk_points': state['risk_points'], 'alert': state['alert'], 'status': state['status'],
+                             'assessment': state['assessment'], 'disposition': state['disposition'],
+                             'revision': state['revision'], 'evidence_root': state['root'], 'short_id': graph['short_id'],
+                             'indicators': features, 'techniques': [item['id'] for item in annotate(features)],
+                             'external_reference': (state['execution'] or {}).get('reference'),
+                             'history_events': len(history), 'created_at': state['created_at'], 'updated_at': state['updated_at']})
+        return rows
 
     @staticmethod
     def response_options(state: dict, policy: dict, features: dict) -> list[dict]:
@@ -235,12 +267,12 @@ class InvestigationStore:
         actor = required_text(actor, 'Analyst name', 100)
         rationale = required_text(rationale, 'Assessment rationale')
         if assessment not in {'expected', 'needs_evidence', 'threat'}:
-            raise ValueError('Choose expected activity, more evidence needed, or suspected threat')
+            raise ValueError('Select a conclusion: expected activity, more evidence required or suspected threat.')
         with self.transaction() as db:
             state, _, _, _, _ = self._load(db, case_id)
             self._check_version(state, expected)
             if state['approval']:
-                raise ConflictError('Record the approved response outcome or add new evidence before reassessing.')
+                raise ConflictError('A response is already approved. Record its outcome or add new evidence before reassessing.')
             state.update(assessment=assessment, rationale=rationale,
                          status={'expected': 'reviewed_expected', 'needs_evidence': 'needs_evidence', 'threat': 'reviewed_threat'}[assessment])
             self._commit(db, state, actor, 'assessed', {'assessment': assessment, 'rationale': rationale})
@@ -256,12 +288,13 @@ class InvestigationStore:
         return self.detail(case_id)
 
     def add_evidence(self, case_id: str, expected: int, actor: str, content: bytes | None,
-                     format_name: str, policy: dict | None, reason: str) -> dict:
+                     format_name: str, policy: dict | None, reason: str,
+                     adapter_settings: dict | None = None) -> dict:
         actor = required_text(actor, 'Analyst name', 100)
         reason = required_text(reason, 'Evidence update reason')
-        incoming = read_records(content, format_name) if content else []
+        incoming = read_records(content, format_name, adapter_settings) if content else []
         if not incoming and policy is None:
-            raise ValueError('Attach records or an updated permission policy')
+            raise ValueError('Attach additional events or an updated permission policy.')
         with self.transaction() as db:
             state, current_policy, _, _, raw = self._load(db, case_id)
             self._check_version(state, expected)
@@ -270,13 +303,13 @@ class InvestigationStore:
             for item in incoming:
                 event = normalize(item)
                 if (event['tenant'], event['principal'], event['resource']) != (state['tenant'], state['principal'], state['resource']):
-                    raise ValueError('Additional evidence must belong to the selected tenant, principal and resource')
+                    raise ValueError('Additional events must belong to the same tenant, principal and resource as this investigation.')
                 if event['event_id'] in existing and existing[event['event_id']] != item:
-                    raise ValueError('A prior event cannot be replaced; use a new event ID for a new observation')
+                    raise ValueError('An existing event cannot be replaced. Use a new event ID for each new observation.')
                 existing[event['event_id']] = item
             graph, decision, _, _ = build(list(existing.values()), selected_policy)
             if graph['root'] == state['root']:
-                raise ConflictError('This update contains no new evidence or policy changes')
+                raise ConflictError('The update contains no new events or policy changes.')
             for event_id, item in existing.items():
                 db.execute('INSERT OR IGNORE INTO observations VALUES(?,?,?)', (case_id, event_id, item))
             state.update(revision=state['revision'] + 1, root=graph['root'], risk_points=decision['risk_points'],
@@ -291,17 +324,17 @@ class InvestigationStore:
     def preview(self, case_id: str, expected: int, actor: str, actions: list[str]) -> dict:
         actor = required_text(actor, 'Analyst name', 100)
         if not isinstance(actions, list) or not actions or any(not isinstance(action, str) for action in actions):
-            raise ValueError('Choose a permitted response option')
+            raise ValueError('Select a permitted response action.')
         with self.transaction() as db:
             state, policy, bundle, _, _ = self._load(db, case_id)
             self._check_version(state, expected)
             if state['assessment'] != 'threat' or state['approval']:
-                raise ConflictError('Assess the incident as a suspected threat before previewing a response')
+                raise ConflictError('Record a suspected-threat assessment before previewing a response.')
             features = next(node['data']['values'] for node in bundle['payload']['graph']['nodes'].values() if node['kind'] == 'features')
             option = next((item for item in self.response_options(state, policy, features)
                            if sorted(item['actions']) == sorted(actions)), None)
             if option is None:
-                raise ValueError('The selected change is not permitted by the current policy')
+                raise ValueError('The selected action is not permitted by the current permission policy.')
             preview = {'id': str(uuid.uuid4()), 'case_id': case_id, 'revision': state['revision'],
                        'root': state['root'], 'created_at': now(), **option}
             document = sign_document(preview, self.key)
@@ -313,16 +346,22 @@ class InvestigationStore:
         actor = required_text(actor, 'Analyst name', 100)
         rationale = required_text(rationale, 'Approval rationale')
         with self.transaction() as db:
-            state, _, _, _, _ = self._load(db, case_id)
+            state, policy, _, history, _ = self._load(db, case_id)
             self._check_version(state, expected)
             if state['assessment'] != 'threat' or state['approval']:
-                raise ConflictError('Response approval is not available in the current state')
+                raise ConflictError('A response can be approved only for a suspected threat without an existing approval.')
+            if policy.get('separation_of_duties'):
+                assessor = next((entry['payload']['actor'] for entry in reversed(history)
+                                 if entry['payload']['kind'] == 'assessed'), None)
+                if assessor is not None and assessor.casefold() == actor.casefold():
+                    raise ConflictError('This policy requires separation of duties. The response must be approved '
+                                        f'by an analyst other than the assessor ({assessor}).')
             row = db.execute('SELECT document FROM previews WHERE id=? AND case_id=?', (preview_id, case_id)).fetchone()
             if row is None:
-                raise ValueError('Preview not found')
+                raise ValueError('The response preview was not found. Preview the response again.')
             preview = verify_document(json.loads(row['document']), self.public_key)
             if preview['root'] != state['root'] or preview['revision'] != state['revision']:
-                raise ConflictError('The evidence changed. Preview the response again before approving.')
+                raise ConflictError('The evidence has changed since this preview. Preview the response again before approving.')
             state['approval'] = {'preview': preview, 'actor': actor, 'rationale': rationale, 'approved_at': now()}
             state['status'] = 'response_approved'
             self._commit(db, state, actor, 'response_approved', state['approval'])
@@ -334,12 +373,12 @@ class InvestigationStore:
         reference = required_text(reference, 'External change or ticket reference', 500)
         explanation = required_text(explanation, 'Response outcome note')
         if outcome not in {'completed', 'failed', 'not_applied'}:
-            raise ValueError('Choose completed, failed, or not applied')
+            raise ValueError('Select an outcome: completed, failed or not applied.')
         with self.transaction() as db:
             state, _, _, _, _ = self._load(db, case_id)
             self._check_version(state, expected)
             if not state['approval'] or state['execution']:
-                raise ConflictError('An approved response without a recorded outcome is required')
+                raise ConflictError('An outcome can be recorded only for an approved response that has no outcome yet.')
             state['execution'] = {'outcome': outcome, 'reference': reference, 'note': explanation,
                                   'recorded_at': now(), 'actor': actor, 'execution_source': 'analyst-attested-external-action'}
             state['status'] = 'response_recorded'
@@ -355,16 +394,16 @@ class InvestigationStore:
             self._check_version(state, expected)
             if disposition == 'expected':
                 if state['assessment'] != 'expected':
-                    raise ConflictError('Review and classify the activity as expected before closing')
+                    raise ConflictError('Record an expected-activity assessment before closing as expected.')
             elif disposition == 'resolved':
                 if state['assessment'] != 'threat' or not state['execution'] or state['execution']['outcome'] != 'completed':
-                    raise ConflictError('Record a completed approved response before closing as resolved')
+                    raise ConflictError('Closing as resolved requires an approved response with a completed outcome.')
             elif disposition == 'escalated':
                 if state['assessment'] != 'threat':
-                    raise ConflictError('Assess the suspected threat before escalating')
+                    raise ConflictError('Record a suspected-threat assessment before escalating.')
                 reference = required_text(reference, 'Escalation reference', 500)
             else:
-                raise ValueError('Choose expected, resolved, or escalated')
+                raise ValueError('Select a disposition: expected activity, resolved or escalated.')
             state.update(status='closed', disposition=disposition, closing_note=explanation)
             self._commit(db, state, actor, 'closed', {'disposition': disposition, 'note': explanation, 'reference': reference})
         return self.detail(case_id)

@@ -3,7 +3,7 @@
 ## Start the application
 
 1. Stop any older instance with Ctrl+C.
-2. Extract `Cloud_Threat_Investigation_Source.zip` into a fresh folder.
+2. Clone the repository: `git clone https://github.com/AI-Cloud-Security/cloud-threat-investigation.git`
 3. Open `cloud-threat-investigation` in VS Code.
 4. Open its terminal and run:
 
@@ -21,20 +21,20 @@ The browser opens at http://127.0.0.1:8765. First start shows an empty inbox. La
 
 Click **Import records** and enter your analyst name. Upload your normalized CSV, JSONL or JSON records, plus an optional permission policy. The dialog provides a CSV template and policy example. Without a policy, no response change is permitted.
 
-To explore the screens first, click **Load included dataset**. This explicitly loads three synthetic incidents: payments activity, scheduled backup and analytics activity. No case is loaded automatically.
+To explore the screens first, click **Normalized sample** under **Explore with sample data**. This loads three synthetic incidents. Nothing is loaded automatically. The **AWS CloudTrail**, **Microsoft Azure** and **Google Cloud** buttons load incidents converted from synthetic provider logs instead.
 
-For the payments incident:
+For the highest-risk incident:
 
-1. Select **service-payments accessing storage-invoices**.
-2. Review the 95-point configured score under **Review & assess** and inspect source records under **Evidence & timeline**.
-3. Save **Suspected threat**, with your rationale.
-4. Open **Response & closure**, select **disable public access**, and click **Preview response**. The hypothetical score becomes 60.
-5. Review the preview, enter an approval rationale and click **Record response approval**.
-6. Perform the approved change in your external cloud/security console through your normal change process. Then record its actual outcome, ticket reference and verification note in the application. For synthetic records, use an explicitly synthetic exercise reference and make no claim of a real cloud change.
-7. A recorded completed outcome permits **Close as resolved**. A failed or unapplied response can be escalated with a reference.
-8. Download the final investigation archive and public key. Closed cases are read-only.
+1. Select **Large read of a publicly exposed resource from an unusual region** (principal `service-payments`, resource `storage-invoices`). It opens automatically after the import.
+2. On the **Overview** tab, review the 95-point score and its breakdown. On the **Evidence** tab, inspect the event timeline and source records.
+3. Record the assessment **Suspected threat** with a rationale.
+4. On the **Response** tab, select **Disable public access** and click **Preview response**. The projected score is 60.
+5. Enter an approval rationale and click **Approve response**.
+6. Apply the approved change through your normal change process, then click **Record outcome** with the result, a change or ticket reference and verification notes. For synthetic data, use an exercise reference and do not claim a real cloud change.
+7. A completed outcome enables the **Resolved** disposition. A failed or unapplied response can be escalated with a reference.
+8. Click **Download archive** and **Download public key**. Closed investigations are read-only.
 
-Other paths: classify the scheduled backup as **Expected activity**, then close as expected. Choose **More evidence needed** to attach same-incident records or a policy; the application creates a new revision and requires reassessment. A suspected threat can be escalated with a handoff reference when no response is appropriate.
+Other paths: assess the scheduled backup as **Expected activity**, then close it as expected. Choose **More evidence required** to attach further records or a policy on the **Evidence** tab; this creates a new evidence revision and requires a new assessment. A suspected threat can be escalated with a handoff reference when no response is appropriate.
 
 ## Verify an export
 

@@ -2,7 +2,11 @@
 
 ## Intended operation
 
-Run on a trusted local workstation. The HTTP service binds to 127.0.0.1 and rejects unrecognized Host headers. It is not an internet-facing or multi-user deployment. Local analyst names are self-asserted; the application has no enterprise login, tenant authorization or separation of approver and investigator.
+Run on a trusted local workstation. The HTTP service binds to 127.0.0.1 and rejects unrecognized Host headers. It is not an internet-facing or multi-user deployment. Local analyst names are self-asserted; the application has no enterprise login or tenant authorization. A policy can require separation of duties between assessor and approver, but because names are self-asserted this enforces process discipline, not identity.
+
+The container image binds to all interfaces inside the container so that the published port is reachable. Publish it to loopback on the host only (`-p 127.0.0.1:8765:8765`). `--allowed-host` adds exact Host header values; it does not add authentication. Starting with a non-loopback `--host` prints a warning.
+
+Provider adapters parse untrusted exports with the same size and record limits as normalized imports, and reject malformed events with the event index. Original provider events are retained in evidence and exports; treat them as sensitive.
 
 The API uses a random per-process browser request token, same-origin validation, bounded JSON requests, explicit routes and parameterized SQL. Static assets are allowlisted. Responses include no-store, content security policy, anti-framing, no-sniff and no-referrer headers. These controls do not protect a compromised workstation or stop another authorized local process from using the API.
 
@@ -30,6 +34,6 @@ The application performs no cloud API changes. A completed external response is 
 
 ## Repository and reporting
 
-Keep `workspace/`, `runs/`, local environments, generated records, private keys and credentials out of GitHub. Use synthetic fixtures in public examples. Repository checks are a safeguard, not a comprehensive secret scanner. Select publication and licensing terms before release.
+Keep `workspace/`, `runs/`, local environments, generated records, private keys and credentials out of GitHub. Use synthetic fixtures in public examples. Repository checks are a safeguard, not a comprehensive secret scanner.
 
 Report security issues through a private channel agreed with the maintainers. Include a minimal synthetic reproduction and version details; never put confidential events, credentials or signing keys in public issues.

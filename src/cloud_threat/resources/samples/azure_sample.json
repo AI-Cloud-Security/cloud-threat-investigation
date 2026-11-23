@@ -1,0 +1,146 @@
+{
+  "records": [
+    {
+      "time": "2026-10-30T21:58:02.4810000Z",
+      "resourceId": "/subscriptions/00000000-aaaa-4bbb-8ccc-111122223333/resourceGroups/rg-finance/providers/Microsoft.Storage/storageAccounts/finreportsprod/blobServices/default/containers/reports",
+      "operationName": "MICROSOFT.STORAGE/STORAGEACCOUNTS/BLOBSERVICES/CONTAINERS/WRITE",
+      "category": "Administrative",
+      "resultType": "Success",
+      "resultSignature": "Succeeded.OK",
+      "durationMs": 310,
+      "callerIpAddress": "198.51.100.23",
+      "correlationId": "4b7d0a51-1111-4000-8000-000000000001",
+      "eventDataId": "az-act-0001",
+      "level": "Information",
+      "location": "eastus",
+      "identity": {
+        "authorization": {
+          "action": "Microsoft.Storage/storageAccounts/blobServices/containers/write",
+          "scope": "/subscriptions/00000000-aaaa-4bbb-8ccc-111122223333/resourceGroups/rg-finance/providers/Microsoft.Storage/storageAccounts/finreportsprod"
+        },
+        "claims": {
+          "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/upn": "ops-admin@contoso.example",
+          "appid": "c44b4083-3bb0-49c1-b47d-974e53cbdf3c"
+        }
+      },
+      "properties": {
+        "requestbody": "{\"properties\": {\"publicAccess\": \"Blob\"}}",
+        "statusCode": "OK"
+      }
+    },
+    {
+      "time": "2026-10-31T02:15:40.1234567Z",
+      "resourceId": "/subscriptions/00000000-aaaa-4bbb-8ccc-111122223333/resourceGroups/rg-finance/providers/Microsoft.Storage/storageAccounts/finreportsprod/blobServices/default",
+      "category": "StorageRead",
+      "operationName": "GetBlob",
+      "operationVersion": "2023-11-03",
+      "schemaVersion": "1.0",
+      "statusCode": 200,
+      "statusText": "Success",
+      "durationMs": 122,
+      "callerIpAddress": "203.0.113.42:51002",
+      "correlationId": "9f1c2e02-0000-4000-8000-00000000a002",
+      "identity": {
+        "type": "Anonymous"
+      },
+      "location": "eastus",
+      "properties": {
+        "accountName": "finreportsprod",
+        "userAgentHeader": "azsdk-python-storage-blob/12.19.0",
+        "serviceType": "blob",
+        "objectKey": "/finreportsprod/reports/2026-q3-ledger.csv",
+        "responseBodySize": 367001600
+      },
+      "uri": "https://finreportsprod.blob.core.windows.net/reports/2026-q3-ledger.csv",
+      "protocol": "HTTPS"
+    },
+    {
+      "time": "2026-10-31T02:16:12.5520000Z",
+      "resourceId": "/subscriptions/00000000-aaaa-4bbb-8ccc-111122223333/resourceGroups/rg-finance/providers/Microsoft.Storage/storageAccounts/finreportsprod/blobServices/default",
+      "category": "StorageRead",
+      "operationName": "GetBlob",
+      "operationVersion": "2023-11-03",
+      "schemaVersion": "1.0",
+      "statusCode": 200,
+      "statusText": "Success",
+      "durationMs": 123,
+      "callerIpAddress": "203.0.113.43:51003",
+      "correlationId": "9f1c2e03-0000-4000-8000-00000000a003",
+      "identity": {
+        "type": "Anonymous"
+      },
+      "location": "eastus",
+      "properties": {
+        "accountName": "finreportsprod",
+        "userAgentHeader": "azsdk-python-storage-blob/12.19.0",
+        "serviceType": "blob",
+        "objectKey": "/finreportsprod/reports/summary.pdf",
+        "responseBodySize": 3145728
+      },
+      "uri": "https://finreportsprod.blob.core.windows.net/reports/summary.pdf",
+      "protocol": "HTTPS"
+    },
+    {
+      "time": "2026-10-31T03:41:09.0000000Z",
+      "resourceId": "/subscriptions/00000000-aaaa-4bbb-8ccc-111122223333/resourceGroups/rg-analytics/providers/Microsoft.Storage/storageAccounts/analyticslake/blobServices/default",
+      "category": "StorageRead",
+      "operationName": "GetBlob",
+      "operationVersion": "2023-11-03",
+      "schemaVersion": "1.0",
+      "statusCode": 200,
+      "statusText": "Success",
+      "durationMs": 124,
+      "callerIpAddress": "203.0.113.44:51004",
+      "correlationId": "9f1c2e04-0000-4000-8000-00000000a004",
+      "identity": {
+        "type": "OAuth",
+        "tokenHash": "key1(EXAMPLE)",
+        "requester": {
+          "appId": "6a1b2c3d-0000-4000-8000-0000000e7150",
+          "objectId": "0f9e8d7c-0000-4000-8000-0000000e7150",
+          "tenantId": "72f988bf-0000-4000-8000-00000000c0de"
+        }
+      },
+      "location": "southeastasia",
+      "properties": {
+        "accountName": "analyticslake",
+        "userAgentHeader": "azsdk-python-storage-blob/12.19.0",
+        "serviceType": "blob",
+        "objectKey": "/analyticslake/exports/customers.parquet",
+        "responseBodySize": 1610612736
+      },
+      "uri": "https://analyticslake.blob.core.windows.net/exports/customers.parquet",
+      "protocol": "HTTPS"
+    },
+    {
+      "time": "2026-10-31T04:00:30.0000000Z",
+      "resourceId": "/subscriptions/00000000-aaaa-4bbb-8ccc-111122223333/resourceGroups/rg-ops/providers/Microsoft.Storage/storageAccounts/backupvault01/blobServices/default",
+      "category": "StorageRead",
+      "operationName": "GetBlob",
+      "operationVersion": "2023-11-03",
+      "schemaVersion": "1.0",
+      "statusCode": 200,
+      "statusText": "Success",
+      "durationMs": 125,
+      "callerIpAddress": "203.0.113.45:51005",
+      "correlationId": "9f1c2e05-0000-4000-8000-00000000a005",
+      "identity": {
+        "type": "OAuth",
+        "requester": {
+          "objectId": "5b5b5b5b-0000-4000-8000-0000000bac0b",
+          "tenantId": "72f988bf-0000-4000-8000-00000000c0de"
+        }
+      },
+      "location": "eastus",
+      "properties": {
+        "accountName": "backupvault01",
+        "userAgentHeader": "azsdk-python-storage-blob/12.19.0",
+        "serviceType": "blob",
+        "objectKey": "/backupvault01/nightly/db.bak",
+        "responseBodySize": 20971520
+      },
+      "uri": "https://backupvault01.blob.core.windows.net/nightly/db.bak",
+      "protocol": "HTTPS"
+    }
+  ]
+}

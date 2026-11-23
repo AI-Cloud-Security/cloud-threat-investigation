@@ -1,0 +1,23 @@
+{
+  "tenant": "111122223333",
+  "version": "cloudtrail-sample-policy-v1",
+  "separation_of_duties": true,
+  "edges": [
+    {
+      "principal": "anonymous",
+      "resource": "finance-reports",
+      "action": "disable_public_access"
+    },
+    {
+      "principal": "anonymous",
+      "resource": "finance-reports",
+      "action": "limit_read_volume"
+    },
+    {
+      "principal": "etl-pipeline",
+      "resource": "analytics-lake",
+      "action": "limit_read_volume"
+    }
+  ],
+  "note": "Synthetic example. Production policies should be derived from IAM and change-management rules."
+}

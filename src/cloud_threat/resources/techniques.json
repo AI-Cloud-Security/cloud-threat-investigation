@@ -1,0 +1,17 @@
+{
+  "framework": "MITRE ATT&CK Enterprise (cloud)",
+  "note": "Related techniques for analyst context. An indicator being present does not confirm that a technique occurred.",
+  "features": {
+    "public_access": [
+      {"id": "T1530", "name": "Data from Cloud Storage", "tactic": "Collection"}
+    ],
+    "unusual_region": [
+      {"id": "T1535", "name": "Unused/Unsupported Cloud Regions", "tactic": "Defense Evasion"},
+      {"id": "T1078.004", "name": "Valid Accounts: Cloud Accounts", "tactic": "Initial Access"}
+    ],
+    "large_read": [
+      {"id": "T1530", "name": "Data from Cloud Storage", "tactic": "Collection"},
+      {"id": "T1537", "name": "Transfer Data to Cloud Account", "tactic": "Exfiltration"}
+    ]
+  }
+}

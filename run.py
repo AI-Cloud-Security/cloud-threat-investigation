@@ -25,6 +25,16 @@ def main():
         from cloud_threat.workflow.exports import main as archive_main
         archive_main()
         return
+    if command == 'convert':
+        sys.argv = ['convert'] + sys.argv[2:]
+        from cloud_threat.adapters.cli import main as convert_main
+        convert_main()
+        return
+    if command == 'explain':
+        sys.argv = ['explain'] + sys.argv[2:]
+        from cloud_threat.core.attribution import main as explain_main
+        explain_main()
+        return
     if command in ('verify', 'create'):
         from cloud_threat.core.evidence import main as verify_main
         verify_main()

@@ -1,0 +1,52 @@
+{
+  "id": "example-gbt-v1",
+  "family": "tree_ensemble",
+  "features": [
+    "large_read",
+    "public_access",
+    "unusual_region"
+  ],
+  "base_score": 0.0,
+  "unit": "score",
+  "description": "Illustrative two-tree ensemble. Internal nodes carry their mean value for path attribution.",
+  "trees": [
+    {
+      "feature": "public_access",
+      "threshold": 0.5,
+      "value": 0.3,
+      "left": {
+        "feature": "large_read",
+        "threshold": 0.5,
+        "value": 0.1,
+        "left": {
+          "leaf": 0.05
+        },
+        "right": {
+          "leaf": 0.3
+        }
+      },
+      "right": {
+        "feature": "unusual_region",
+        "threshold": 0.5,
+        "value": 0.7,
+        "left": {
+          "leaf": 0.55
+        },
+        "right": {
+          "leaf": 0.9
+        }
+      }
+    },
+    {
+      "feature": "large_read",
+      "threshold": 0.5,
+      "value": 0.0,
+      "left": {
+        "leaf": -0.05
+      },
+      "right": {
+        "leaf": 0.15
+      }
+    }
+  ]
+}

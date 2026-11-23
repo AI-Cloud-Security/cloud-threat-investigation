@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Normalized security event",
+  "type": "object",
+  "required": [
+    "tenant",
+    "event_id",
+    "timestamp",
+    "principal",
+    "resource",
+    "action",
+    "public_access",
+    "unusual_region",
+    "large_read"
+  ],
+  "properties": {
+    "tenant": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "event_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096,
+      "description": "Unique within the tenant"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 with an explicit timezone"
+    },
+    "principal": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "resource": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "action": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "public_access": {
+      "type": "integer",
+      "enum": [
+        0,
+        1
+      ]
+    },
+    "unusual_region": {
+      "type": "integer",
+      "enum": [
+        0,
+        1
+      ]
+    },
+    "large_read": {
+      "type": "integer",
+      "enum": [
+        0,
+        1
+      ]
+    },
+    "source_format": {
+      "type": "string",
+      "description": "Set by built-in adapters, e.g. aws-cloudtrail"
+    },
+    "source_event": {
+      "type": "object",
+      "description": "Original provider event, preserved in signed raw evidence"
+    }
+  },
+  "additionalProperties": true
+}

@@ -4,18 +4,18 @@ The analyst brings a set of security records to investigate an identity's access
 
 ```mermaid
 flowchart TD
-    Start["Open empty workspace"] --> Import["Import normalized records and optional policy"]
+    Start["Open empty workspace"] --> Import["Import records or provider logs, with optional policy"]
     Import --> Inbox["Select an incident"]
     Inbox --> Review["Review source timeline and score"]
     Review --> Assess{"Analyst assessment"}
     Assess -->|Expected activity| Expected["Record expected-activity rationale"]
-    Assess -->|More evidence needed| Evidence["Attach records or updated policy"]
+    Assess -->|More evidence required| Evidence["Attach records or updated policy"]
     Evidence --> Revision["New revision; reassessment required"]
     Revision --> Review
     Assess -->|Suspected threat| Plan{"Permitted response available?"}
     Plan -->|Yes| Preview["Preview and approve response"]
     Preview --> External["Perform change externally"]
-    External --> Outcome{"Record external outcome"}
+    External --> Outcome{"Record change outcome"}
     Outcome -->|Completed| Resolve["Close as resolved"]
     Outcome -->|Failed or not applied| Escalate["Close as escalated with reference"]
     Plan -->|No| Escalate

@@ -1,0 +1,23 @@
+{
+  "tenant": "00000000-aaaa-4bbb-8ccc-111122223333",
+  "version": "azure-sample-policy-v1",
+  "separation_of_duties": true,
+  "edges": [
+    {
+      "principal": "anonymous",
+      "resource": "finreportsprod",
+      "action": "disable_public_access"
+    },
+    {
+      "principal": "anonymous",
+      "resource": "finreportsprod",
+      "action": "limit_read_volume"
+    },
+    {
+      "principal": "etl-sync-app",
+      "resource": "analyticslake",
+      "action": "limit_read_volume"
+    }
+  ],
+  "note": "Synthetic example. Production policies should be derived from Azure RBAC and change-management rules."
+}
