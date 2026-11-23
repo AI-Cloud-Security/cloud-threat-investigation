@@ -84,9 +84,13 @@ docker compose up --build        # then open http://127.0.0.1:8765
 
 ## How it works
 
-![Cloud Threat Investigation architecture](docs/images/architecture.svg)
+<a href="docs/images/architecture.png" title="Open the full-resolution diagram">
+  <img src="docs/images/architecture.svg" alt="Cloud Threat Investigation architecture" width="100%">
+</a>
 
-Provider logs and normalized records are converted and validated, grouped into incidents, scored and bound into a signed evidence graph. Analysts then work each case through a signed, hash-chained workflow and export archives that anyone can verify offline. A full-resolution [PNG version](docs/images/architecture.png) is available for slides and documents, and the [architecture guide](docs/ARCHITECTURE.md) describes each component.
+<sub>Click the diagram to open it at full resolution.</sub>
+
+Provider logs and normalized records are converted and validated, grouped into incidents, scored and bound into a signed evidence graph. Analysts then work each case through a signed, hash-chained workflow and export archives that anyone can verify offline. The [architecture guide](docs/ARCHITECTURE.md) describes each component.
 
 **Scoring profile (configurable, not a trained model):**
 `10 + 35·public_access + 20·unusual_region + 30·large_read`. The alert threshold is **70**. Scores are transparent risk points, not probabilities.

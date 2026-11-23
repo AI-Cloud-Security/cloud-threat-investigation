@@ -1,5 +1,13 @@
 # Application architecture
 
+<a href="images/architecture.png" title="Open the full-resolution diagram">
+  <img src="images/architecture.svg" alt="Cloud Threat Investigation architecture" width="100%">
+</a>
+
+<sub>Click the diagram to open it at full resolution.</sub>
+
+Sources are converted and validated, scored and bound into a signed evidence graph, worked through a signed case workflow, and exported as archives that can be verified offline. The sections below describe each component.
+
 ## User journey and system responsibilities
 
 The application starts with an empty persistent workspace. Imports create incidents, analysts investigate and assess them, permission-bound response previews can be approved, external outcomes can be recorded, and closed investigations can be exported and verified independently.
